@@ -4,68 +4,50 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
-import { Clock, CheckCircle, AlertCircle, ArrowRight, ArrowLeft } from "lucide-react";
+import { Clock, CheckCircle, AlertCircle, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
+import { useExamQuestions } from "@/hooks/useExams";
+import { useStartExamAttempt, useSubmitExamAttempt } from "@/hooks/useUserAttempts";
 
 interface ExamModalProps {
-  examId: number;
+  examId: string;
   isOpen: boolean;
   onClose: () => void;
 }
 
-// Mock exam data
-const mockQuestions = [
-  {
-    id: 1,
-    question: "ما هو الهدف الرئيسي لمؤسسة بريد الجزائر؟",
-    options: [
-      "تقديم الخدمات البريدية فقط",
-      "تقديم الخدمات البريدية والمالية والرقمية",
-      "تقديم الخدمات المصرفية فقط",
-      "تقديم خدمات الاتصالات"
-    ],
-    correctAnswer: 1,
-    explanation: "مؤسسة بريد الجزائر تقدم مجموعة شاملة من الخدمات تشمل الخدمات البريدية والمالية والرقمية."
-  },
-  {
-    id: 2,
-    question: "ما هي خدمة E-CCP؟",
-    options: [
-      "خدمة البريد الإلكتروني",
-      "الحساب الجاري البريدي الإلكتروني",
-      "خدمة التوصيل السريع",
-      "تطبيق للهواتف الذكية"
-    ],
-    correctAnswer: 1,
-    explanation: "E-CCP هو الحساب الجاري البريدي الإلكتروني الذي يتيح للعملاء إدارة حساباتهم إلكترونياً."
-  },
-  {
-    id: 3,
-    question: "ما هو تطبيق Baridi Mob؟",
-    options: [
-      "تطبيق للتسوق الإلكتروني",
-      "تطبيق الدفع المحمول لبريد الجزائر",
-      "تطبيق لتتبع الطرود",
-      "تطبيق للتواصل الاجتماعي"
-    ],
-    correctAnswer: 1,
-    explanation: "Baridi Mob هو تطبيق الدفع المحمول الخاص ببريد الجزائر للمعاملات المالية."
-  }
-];
-
 const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<{ [key: number]: number }>({});
+  const [answers, setAnswers] = useState<{ [key: string]: string }>({});
   const [timeLeft, setTimeLeft] = useState(3600); // 60 minutes in seconds
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [attemptId, setAttemptId] = useState<string | null>(null);
+  const [startTime, setStartTime] = useState<Date | null>(null);
+
+  const { data: questions, isLoading: questionsLoading } = useExamQuestions(examId);
+  const startExamMutation = useStartExamAttempt();
+  const submitExamMutation = useSubmitExamAttempt();
 
   useEffect(() => {
-    if (isOpen && !isSubmitted) {
+    if (isOpen && !isSubmitted && !attemptId && questions) {
+      // Start exam attempt
+      startExamMutation.mutate(
+        { examId, totalQuestions: questions.length },
+        {
+          onSuccess: (data) => {
+            setAttemptId(data.id);
+            setStartTime(new Date());
+          }
+        }
+      );
+    }
+  }, [isOpen, questions, isSubmitted, attemptId]);
+
+  useEffect(() => {
+    if (isOpen && !isSubmitted && startTime) {
       const timer = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
-            setIsSubmitted(true);
-            setShowResults(true);
+            handleSubmit();
             return 0;
           }
           return prev - 1;
@@ -74,28 +56,55 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
 
       return () => clearInterval(timer);
     }
-  }, [isOpen, isSubmitted]);
+  }, [isOpen, isSubmitted, startTime]);
 
-  const handleAnswerSelect = (questionId: number, answerIndex: number) => {
+  const handleAnswerSelect = (questionId: string, optionId: string) => {
     setAnswers(prev => ({
       ...prev,
-      [questionId]: answerIndex
+      [questionId]: optionId
     }));
   };
 
   const handleSubmit = () => {
-    setIsSubmitted(true);
-    setShowResults(true);
+    if (!attemptId || !questions || !startTime) return;
+
+    const timeTaken = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
+    
+    // Prepare answers data
+    const answersData = questions.map(question => {
+      const selectedOptionId = answers[question.id];
+      const selectedOption = question.answer_options.find(opt => opt.id === selectedOptionId);
+      const isCorrect = selectedOption?.is_correct || false;
+      
+      return {
+        questionId: question.id,
+        selectedOptionId: selectedOptionId || '',
+        isCorrect
+      };
+    });
+
+    submitExamMutation.mutate(
+      { attemptId, answers: answersData, timeTaken },
+      {
+        onSuccess: () => {
+          setIsSubmitted(true);
+          setShowResults(true);
+        }
+      }
+    );
   };
 
   const calculateScore = () => {
+    if (!questions) return 0;
     let correct = 0;
-    mockQuestions.forEach(question => {
-      if (answers[question.id] === question.correctAnswer) {
+    questions.forEach(question => {
+      const selectedOptionId = answers[question.id];
+      const selectedOption = question.answer_options.find(opt => opt.id === selectedOptionId);
+      if (selectedOption?.is_correct) {
         correct++;
       }
     });
-    return Math.round((correct / mockQuestions.length) * 100);
+    return Math.round((correct / questions.length) * 100);
   };
 
   const formatTime = (seconds: number) => {
@@ -110,7 +119,36 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
     setTimeLeft(3600);
     setIsSubmitted(false);
     setShowResults(false);
+    setAttemptId(null);
+    setStartTime(null);
   };
+
+  if (questionsLoading || startExamMutation.isPending) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-md" dir="rtl">
+          <div className="flex flex-col items-center justify-center py-8">
+            <Loader2 className="w-8 h-8 animate-spin text-emerald-600 mb-4" />
+            <p className="text-lg text-gray-700">جاري تحضير الامتحان...</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  if (!questions || questions.length === 0) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-md" dir="rtl">
+          <div className="flex flex-col items-center justify-center py-8">
+            <AlertCircle className="w-8 h-8 text-red-500 mb-4" />
+            <p className="text-lg text-gray-700">لا توجد أسئلة متاحة لهذا الامتحان</p>
+            <Button onClick={onClose} className="mt-4">العودة</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   if (showResults) {
     const score = calculateScore();
@@ -127,10 +165,14 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
               <CardContent className="p-6 text-center">
                 <div className="text-6xl font-bold text-emerald-600 mb-2">{score}%</div>
                 <div className="text-xl text-gray-700">
-                  أجبت على {Object.keys(answers).length} من {mockQuestions.length} سؤال
+                  أجبت على {Object.keys(answers).length} من {questions.length} سؤال
                 </div>
                 <div className="text-lg text-gray-600 mt-2">
-                  إجابات صحيحة: {mockQuestions.filter(q => answers[q.id] === q.correctAnswer).length}
+                  إجابات صحيحة: {questions.filter(q => {
+                    const selectedOptionId = answers[q.id];
+                    const selectedOption = q.answer_options.find(opt => opt.id === selectedOptionId);
+                    return selectedOption?.is_correct;
+                  }).length}
                 </div>
               </CardContent>
             </Card>
@@ -138,9 +180,11 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
             {/* Detailed Results */}
             <div className="space-y-4">
               <h3 className="text-xl font-bold">مراجعة الأسئلة والإجابات:</h3>
-              {mockQuestions.map((question, index) => {
-                const userAnswer = answers[question.id];
-                const isCorrect = userAnswer === question.correctAnswer;
+              {questions.map((question, index) => {
+                const selectedOptionId = answers[question.id];
+                const selectedOption = question.answer_options.find(opt => opt.id === selectedOptionId);
+                const correctOption = question.answer_options.find(opt => opt.is_correct);
+                const isCorrect = selectedOption?.is_correct || false;
                 
                 return (
                   <Card key={question.id} className={`border-2 ${isCorrect ? 'border-emerald-200 bg-emerald-50' : 'border-red-200 bg-red-50'}`}>
@@ -153,39 +197,41 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
                         )}
                         <div className="flex-1">
                           <h4 className="font-semibold text-lg mb-2">
-                            السؤال {index + 1}: {question.question}
+                            السؤال {index + 1}: {question.question_text}
                           </h4>
                           
                           <div className="space-y-2 mb-3">
-                            {question.options.map((option, optionIndex) => (
+                            {question.answer_options.map((option, optionIndex) => (
                               <div
-                                key={optionIndex}
+                                key={option.id}
                                 className={`p-2 rounded-lg border ${
-                                  optionIndex === question.correctAnswer
+                                  option.is_correct
                                     ? 'border-emerald-300 bg-emerald-100 text-emerald-800'
-                                    : optionIndex === userAnswer && userAnswer !== question.correctAnswer
+                                    : option.id === selectedOptionId && !option.is_correct
                                     ? 'border-red-300 bg-red-100 text-red-800'
                                     : 'border-gray-200 bg-gray-50'
                                 }`}
                               >
                                 <span className="font-medium">
-                                  {String.fromCharCode(65 + optionIndex)}) {option}
+                                  {String.fromCharCode(65 + optionIndex)}) {option.option_text}
                                 </span>
-                                {optionIndex === question.correctAnswer && (
+                                {option.is_correct && (
                                   <span className="mr-2 text-emerald-600 font-bold">(الإجابة الصحيحة)</span>
                                 )}
-                                {optionIndex === userAnswer && userAnswer !== question.correctAnswer && (
+                                {option.id === selectedOptionId && !option.is_correct && (
                                   <span className="mr-2 text-red-600 font-bold">(إجابتك)</span>
                                 )}
                               </div>
                             ))}
                           </div>
                           
-                          <div className="bg-blue-50 border-r-4 border-blue-400 p-3 rounded">
-                            <p className="text-blue-800">
-                              <strong>الشرح:</strong> {question.explanation}
-                            </p>
-                          </div>
+                          {question.explanation && (
+                            <div className="bg-blue-50 border-r-4 border-blue-400 p-3 rounded">
+                              <p className="text-blue-800">
+                                <strong>الشرح:</strong> {question.explanation}
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </CardContent>
@@ -212,17 +258,17 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" dir="rtl">
         <DialogHeader>
-          <DialogTitle className="text-2xl">الامتحان التجريبي رقم {examId}</DialogTitle>
+          <DialogTitle className="text-2xl">الامتحان التجريبي</DialogTitle>
           <div className="flex items-center justify-between mt-4">
             <div className="flex items-center gap-2 text-lg">
               <Clock className="w-5 h-5 text-red-500" />
               <span className="font-mono text-red-600">{formatTime(timeLeft)}</span>
             </div>
             <div className="text-sm text-gray-600">
-              السؤال {currentQuestion + 1} من {mockQuestions.length}
+              السؤال {currentQuestion + 1} من {questions.length}
             </div>
           </div>
-          <Progress value={((currentQuestion + 1) / mockQuestions.length) * 100} className="mt-2" />
+          <Progress value={((currentQuestion + 1) / questions.length) * 100} className="mt-2" />
         </DialogHeader>
 
         <div className="space-y-6">
@@ -230,22 +276,22 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
           <Card className="border-0 shadow-lg">
             <CardContent className="p-6">
               <h3 className="text-xl font-semibold mb-4">
-                السؤال {currentQuestion + 1}: {mockQuestions[currentQuestion].question}
+                السؤال {currentQuestion + 1}: {questions[currentQuestion].question_text}
               </h3>
               
               <div className="space-y-3">
-                {mockQuestions[currentQuestion].options.map((option, index) => (
+                {questions[currentQuestion].answer_options.map((option, index) => (
                   <button
-                    key={index}
-                    onClick={() => handleAnswerSelect(mockQuestions[currentQuestion].id, index)}
+                    key={option.id}
+                    onClick={() => handleAnswerSelect(questions[currentQuestion].id, option.id)}
                     className={`w-full p-4 text-right rounded-lg border-2 transition-all duration-200 ${
-                      answers[mockQuestions[currentQuestion].id] === index
+                      answers[questions[currentQuestion].id] === option.id
                         ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
                         : 'border-gray-200 bg-white hover:border-emerald-300 hover:bg-emerald-50'
                     }`}
                   >
                     <span className="font-medium">
-                      {String.fromCharCode(65 + index)}) {option}
+                      {String.fromCharCode(65 + index)}) {option.option_text}
                     </span>
                   </button>
                 ))}
@@ -269,7 +315,7 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
             </div>
 
             <div className="flex gap-2">
-              {currentQuestion < mockQuestions.length - 1 ? (
+              {currentQuestion < questions.length - 1 ? (
                 <Button
                   onClick={() => setCurrentQuestion(prev => prev + 1)}
                   className="bg-gradient-to-r from-emerald-500 to-blue-600 flex items-center gap-2"
@@ -281,9 +327,16 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
                 <Button
                   onClick={handleSubmit}
                   className="bg-gradient-to-r from-emerald-500 to-blue-600"
-                  disabled={Object.keys(answers).length === 0}
+                  disabled={Object.keys(answers).length === 0 || submitExamMutation.isPending}
                 >
-                  تسليم الامتحان
+                  {submitExamMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      جاري التسليم...
+                    </>
+                  ) : (
+                    'تسليم الامتحان'
+                  )}
                 </Button>
               )}
             </div>
@@ -294,14 +347,14 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
             <CardContent className="p-4">
               <h4 className="font-semibold mb-3">الانتقال السريع للأسئلة:</h4>
               <div className="grid grid-cols-10 gap-2">
-                {mockQuestions.map((_, index) => (
+                {questions.map((question, index) => (
                   <button
-                    key={index}
+                    key={question.id}
                     onClick={() => setCurrentQuestion(index)}
                     className={`w-10 h-10 rounded-lg border-2 font-medium transition-all ${
                       index === currentQuestion
                         ? 'border-emerald-500 bg-emerald-500 text-white'
-                        : answers[mockQuestions[index].id] !== undefined
+                        : answers[question.id]
                         ? 'border-blue-300 bg-blue-100 text-blue-700'
                         : 'border-gray-300 bg-white text-gray-700 hover:border-emerald-300'
                     }`}

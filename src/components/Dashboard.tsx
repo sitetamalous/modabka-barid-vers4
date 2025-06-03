@@ -13,33 +13,46 @@ import {
   TrendingUp,
   Star,
   CheckCircle,
-  BookOpen
+  BookOpen,
+  Loader2
 } from "lucide-react";
 import ExamModal from "@/components/ExamModal";
+import { useExams } from "@/hooks/useExams";
+import { useUserAttempts } from "@/hooks/useUserAttempts";
 
 interface DashboardProps {
   onLogout: () => void;
 }
 
 const Dashboard = ({ onLogout }: DashboardProps) => {
-  const [selectedExam, setSelectedExam] = useState<number | null>(null);
+  const [selectedExam, setSelectedExam] = useState<string | null>(null);
+  
+  const { data: exams, isLoading: examsLoading } = useExams();
+  const { data: userAttempts, isLoading: attemptsLoading } = useUserAttempts();
 
-  // Mock data for exams
-  const exams = [
-    { id: 1, title: "الامتحان التجريبي الأول", description: "مقدمة حول بريد الجزائر والخدمات الأساسية", duration: 60, questions: 50, completed: true, score: 85 },
-    { id: 2, title: "الامتحان التجريبي الثاني", description: "الخدمات المالية والحوالات البريدية", duration: 60, questions: 50, completed: true, score: 92 },
-    { id: 3, title: "الامتحان التجريبي الثالث", description: "الخدمات الرقمية وE-CCP", duration: 60, questions: 50, completed: false, score: null },
-    { id: 4, title: "الامتحان التجريبي الرابع", description: "خدمة الزبائن ومعالجة الشكاوى", duration: 60, questions: 50, completed: false, score: null },
-    { id: 5, title: "الامتحان التجريبي الخامس", description: "التطبيقات المحمولة وBaridi Mob", duration: 60, questions: 50, completed: false, score: null },
-    { id: 6, title: "الامتحان التجريبي السادس", description: "الامتحان الشامل الأول", duration: 75, questions: 50, completed: false, score: null },
-    { id: 7, title: "الامتحان التجريبي السابع", description: "حالات عملية ومواقف حقيقية", duration: 60, questions: 50, completed: false, score: null },
-    { id: 8, title: "الامتحان التجريبي الثامن", description: "القوانين واللوائح الداخلية", duration: 60, questions: 50, completed: false, score: null },
-    { id: 9, title: "الامتحان التجريبي التاسع", description: "الامتحان الشامل الثاني", duration: 75, questions: 50, completed: false, score: null },
-    { id: 10, title: "الامتحان التجريبي العاشر", description: "المراجعة النهائية والتقييم الشامل", duration: 90, questions: 50, completed: false, score: null }
-  ];
+  // Calculate completed exams and average score
+  const completedAttempts = userAttempts?.filter(attempt => attempt.is_completed) || [];
+  const averageScore = completedAttempts.length > 0 
+    ? completedAttempts.reduce((sum, attempt) => sum + (attempt.score || 0), 0) / completedAttempts.length 
+    : 0;
 
-  const completedExams = exams.filter(exam => exam.completed).length;
-  const averageScore = exams.filter(exam => exam.completed).reduce((sum, exam) => sum + (exam.score || 0), 0) / completedExams || 0;
+  // Check if user has completed each exam
+  const getExamStatus = (examId: string) => {
+    return userAttempts?.find(attempt => 
+      attempt.exam_id === examId && attempt.is_completed
+    );
+  };
+
+  if (examsLoading || attemptsLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50 flex items-center justify-center" dir="rtl">
+        <div className="flex items-center gap-3">
+          <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
+          <span className="text-lg text-gray-700">جاري تحميل البيانات...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50" dir="rtl">
@@ -79,8 +92,11 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{completedExams}/10</div>
-              <Progress value={(completedExams / 10) * 100} className="mt-3 bg-emerald-400" />
+              <div className="text-3xl font-bold">{completedAttempts.length}/{exams?.length || 0}</div>
+              <Progress 
+                value={exams?.length ? (completedAttempts.length / exams.length) * 100 : 0} 
+                className="mt-3 bg-emerald-400" 
+              />
             </CardContent>
           </Card>
 
@@ -105,8 +121,13 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{((completedExams / 10) * 100).toFixed(0)}%</div>
-              <Progress value={(completedExams / 10) * 100} className="mt-3 bg-purple-400" />
+              <div className="text-3xl font-bold">
+                {exams?.length ? ((completedAttempts.length / exams.length) * 100).toFixed(0) : 0}%
+              </div>
+              <Progress 
+                value={exams?.length ? (completedAttempts.length / exams.length) * 100 : 0} 
+                className="mt-3 bg-purple-400" 
+              />
             </CardContent>
           </Card>
         </div>
@@ -119,62 +140,67 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
           </h2>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {exams.map((exam) => (
-              <Card key={exam.id} className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg hover:-translate-y-1">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg mb-2 group-hover:text-emerald-600 transition-colors">
-                        {exam.title}
-                      </CardTitle>
-                      <CardDescription className="text-sm leading-relaxed">
-                        {exam.description}
-                      </CardDescription>
+            {exams?.map((exam) => {
+              const examStatus = getExamStatus(exam.id);
+              const isCompleted = !!examStatus;
+              
+              return (
+                <Card key={exam.id} className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg hover:-translate-y-1">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg mb-2 group-hover:text-emerald-600 transition-colors">
+                          {exam.title}
+                        </CardTitle>
+                        <CardDescription className="text-sm leading-relaxed">
+                          {exam.description}
+                        </CardDescription>
+                      </div>
+                      {isCompleted && (
+                        <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+                          مكتمل
+                        </Badge>
+                      )}
                     </div>
-                    {exam.completed && (
-                      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
-                        مكتمل
-                      </Badge>
-                    )}
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      <span>{exam.duration} دقيقة</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Target className="w-4 h-4" />
-                      <span>{exam.questions} سؤال</span>
-                    </div>
-                  </div>
-
-                  {exam.completed && exam.score && (
-                    <div className="p-3 bg-emerald-50 rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-emerald-700">النتيجة:</span>
-                        <span className="text-lg font-bold text-emerald-600">{exam.score}%</span>
+                  </CardHeader>
+                  
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between text-sm text-gray-600">
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-4 h-4" />
+                        <span>{exam.duration_minutes} دقيقة</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Target className="w-4 h-4" />
+                        <span>{exam.total_questions} سؤال</span>
                       </div>
                     </div>
-                  )}
 
-                  <Button
-                    onClick={() => setSelectedExam(exam.id)}
-                    className={`w-full flex items-center gap-2 ${
-                      exam.completed 
-                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' 
-                        : 'bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700'
-                    }`}
-                    variant={exam.completed ? 'outline' : 'default'}
-                  >
-                    <PlayCircle className="w-4 h-4" />
-                    {exam.completed ? 'مراجعة الامتحان' : 'بدء الامتحان'}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+                    {isCompleted && examStatus && (
+                      <div className="p-3 bg-emerald-50 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-emerald-700">النتيجة:</span>
+                          <span className="text-lg font-bold text-emerald-600">{examStatus.score}%</span>
+                        </div>
+                      </div>
+                    )}
+
+                    <Button
+                      onClick={() => setSelectedExam(exam.id)}
+                      className={`w-full flex items-center gap-2 ${
+                        isCompleted 
+                          ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' 
+                          : 'bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700'
+                      }`}
+                      variant={isCompleted ? 'outline' : 'default'}
+                    >
+                      <PlayCircle className="w-4 h-4" />
+                      {isCompleted ? 'مراجعة الامتحان' : 'بدء الامتحان'}
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
 
