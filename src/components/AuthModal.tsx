@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -20,16 +22,83 @@ const AuthModal = ({ isOpen, onClose, mode, onSuccess, onSwitchMode }: AuthModal
   const [fullName, setFullName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      if (mode === 'register') {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: fullName,
+            },
+            emailRedirectTo: `${window.location.origin}/`
+          }
+        });
+
+        if (error) {
+          if (error.message.includes('already registered')) {
+            toast({
+              title: "خطأ في التسجيل",
+              description: "هذا البريد الإلكتروني مسجل بالفعل. يرجى تسجيل الدخول بدلاً من ذلك.",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "خطأ في التسجيل",
+              description: error.message,
+              variant: "destructive",
+            });
+          }
+        } else {
+          toast({
+            title: "تم إنشاء الحساب بنجاح",
+            description: "يرجى تفقد بريدك الإلكتروني لتأكيد الحساب",
+          });
+          onSuccess();
+        }
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          if (error.message.includes('Invalid login credentials')) {
+            toast({
+              title: "خطأ في تسجيل الدخول",
+              description: "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "خطأ في تسجيل الدخول",
+              description: error.message,
+              variant: "destructive",
+            });
+          }
+        } else {
+          toast({
+            title: "تم تسجيل الدخول بنجاح",
+            description: "مرحباً بك في منصة امتحانات بريد الجزائر",
+          });
+          onSuccess();
+        }
+      }
+    } catch (error) {
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-      onSuccess();
-    }, 1500);
+    }
   };
 
   const resetForm = () => {
@@ -106,6 +175,7 @@ const AuthModal = ({ isOpen, onClose, mode, onSuccess, onSwitchMode }: AuthModal
                 onChange={(e) => setPassword(e.target.value)}
                 className="pr-10 pl-10 text-right"
                 required
+                minLength={6}
               />
               <button
                 type="button"
