@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { GradientCard } from "@/components/ui/gradient-card";
@@ -19,11 +18,13 @@ import {
   BarChart3,
   BookMarked,
   User,
-  Plus
+  Plus,
+  TrendingUp
 } from "lucide-react";
 import ExamModal from "@/components/ExamModal";
 import { useExams } from "@/hooks/useExams";
 import { useUserAttempts } from "@/hooks/useUserAttempts";
+import { useNavigate } from "react-router-dom";
 
 interface DashboardProps {
   onLogout: () => void;
@@ -32,6 +33,7 @@ interface DashboardProps {
 const Dashboard = ({ onLogout }: DashboardProps) => {
   const [selectedExam, setSelectedExam] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'home' | 'stats' | 'exams' | 'profile'>('home');
+  const navigate = useNavigate();
   
   const { data: exams, isLoading: examsLoading } = useExams();
   const { data: userAttempts, isLoading: attemptsLoading } = useUserAttempts();
@@ -172,7 +174,20 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
               averageScore={averageScore}
               totalQuestions={totalQuestions}
             />
-            {/* Add more detailed statistics here */}
+            
+            <MobileCard>
+              <div className="p-6 text-center">
+                <TrendingUp className="w-12 h-12 text-emerald-600 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-gray-900 mb-2">تفاصيل أكثر</h3>
+                <p className="text-gray-600 mb-4">اطلع على تحليل مفصل لأدائك في جميع الامتحانات</p>
+                <AnimatedButton 
+                  onClick={() => navigate('/results')}
+                  className="w-full"
+                >
+                  عرض النتائج التفصيلية
+                </AnimatedButton>
+              </div>
+            </MobileCard>
           </div>
         );
 
@@ -226,7 +241,17 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
             </MobileCard>
 
             <MobileCard>
-              <div className="p-6">
+              <div className="p-6 space-y-3">
+                <AnimatedButton
+                  variant="outline"
+                  onClick={() => navigate('/results')}
+                  icon={BarChart3}
+                  iconPosition="right"
+                  className="w-full justify-center"
+                >
+                  عرض النتائج التفصيلية
+                </AnimatedButton>
+                
                 <AnimatedButton
                   variant="outline"
                   onClick={onLogout}
