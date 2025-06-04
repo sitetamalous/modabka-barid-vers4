@@ -35,9 +35,9 @@ export const AnimatedButton = ({
   };
 
   const sizes = {
-    sm: "px-6 py-3 text-sm min-h-[44px]",
-    md: "px-8 py-4 text-base min-h-[50px]",
-    lg: "px-10 py-5 text-lg min-h-[56px]"
+    sm: "px-4 py-3 text-sm min-h-[44px]",
+    md: "px-6 py-4 text-sm md:text-base min-h-[50px]",
+    lg: "px-6 py-4 text-sm md:text-lg min-h-[56px]"
   };
 
   return (
@@ -47,17 +47,18 @@ export const AnimatedButton = ({
       type={type}
       className={cn(
         "transform transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] rounded-2xl font-bold",
-        "flex items-center justify-center gap-3 whitespace-nowrap leading-tight",
+        "flex items-center justify-center gap-2 leading-tight",
         "focus:ring-4 focus:ring-emerald-200 focus:outline-none",
+        "text-center break-words hyphens-auto",
         variants[variant],
         sizes[size],
         className
       )}
     >
-      <div className="flex items-center justify-center gap-3">
-        {Icon && iconPosition === "left" && <Icon className="w-5 h-5 flex-shrink-0" />}
-        <span className="font-bold leading-none">{children}</span>
-        {Icon && iconPosition === "right" && <Icon className="w-5 h-5 flex-shrink-0" />}
+      <div className="flex items-center justify-center gap-2 flex-wrap">
+        {Icon && iconPosition === "left" && <Icon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />}
+        <span className="font-bold leading-tight text-center break-words">{children}</span>
+        {Icon && iconPosition === "right" && <Icon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />}
       </div>
     </Button>
   );

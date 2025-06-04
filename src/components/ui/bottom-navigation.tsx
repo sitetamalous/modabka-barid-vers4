@@ -23,7 +23,7 @@ export const BottomNavigation = ({ items, className }: BottomNavigationProps) =>
       "shadow-lg shadow-black/5",
       className
     )}>
-      <div className="grid grid-cols-5 h-20 px-2">
+      <div className="grid grid-cols-5 h-16 px-1">
         {items.map((item, index) => {
           const Icon = item.icon;
           return (
@@ -31,7 +31,7 @@ export const BottomNavigation = ({ items, className }: BottomNavigationProps) =>
               key={index}
               onClick={item.onClick}
               className={cn(
-                "flex flex-col items-center justify-center gap-1.5 transition-all duration-300 relative rounded-2xl mx-1 my-2",
+                "flex flex-col items-center justify-center gap-0.5 transition-all duration-300 relative rounded-2xl mx-0.5 my-1",
                 "active:scale-95 tap-highlight-transparent",
                 item.active 
                   ? "bg-gradient-to-t from-emerald-500 to-emerald-400 text-white shadow-lg shadow-emerald-500/30" 
@@ -41,16 +41,16 @@ export const BottomNavigation = ({ items, className }: BottomNavigationProps) =>
               <div className="relative">
                 <Icon className={cn(
                   "transition-all duration-200",
-                  item.active ? "w-6 h-6" : "w-5 h-5"
+                  item.active ? "w-5 h-5" : "w-4 h-4"
                 )} />
                 {item.badge && item.badge > 0 && (
-                  <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium shadow-lg">
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium shadow-lg">
                     {item.badge > 9 ? '9+' : item.badge}
                   </div>
                 )}
               </div>
               <span className={cn(
-                "text-xs font-medium truncate max-w-full px-1 transition-all duration-200",
+                "text-[10px] font-medium truncate max-w-full px-0.5 transition-all duration-200 leading-tight",
                 item.active ? "text-white font-semibold" : "text-gray-500"
               )}>
                 {item.label}

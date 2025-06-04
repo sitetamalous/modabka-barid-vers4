@@ -6,7 +6,7 @@ import { GradientCard } from "@/components/ui/gradient-card";
 import { AnimatedButton } from "@/components/ui/animated-button";
 import { MobileHeader } from "@/components/ui/mobile-header";
 import { MobileCard } from "@/components/ui/mobile-card";
-import { GraduationCap, Users, BookOpen, Award, ArrowLeft, LogIn, UserPlus, Menu } from "lucide-react";
+import { GraduationCap, Users, BookOpen, Award, ArrowRight, LogIn, UserPlus, Menu } from "lucide-react";
 import AuthModal from "@/components/AuthModal";
 import Dashboard from "@/components/Dashboard";
 import { supabase } from "@/integrations/supabase/client";
@@ -82,14 +82,14 @@ const Index = () => {
               variant="ghost" 
               size="sm"
               onClick={() => handleAuth('login')}
-              className="text-emerald-600"
+              className="text-emerald-600 text-xs px-2"
             >
               دخول
             </Button>
             <Button 
               size="sm"
               onClick={() => handleAuth('register')}
-              className="bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700"
+              className="bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-xs px-2"
             >
               تسجيل
             </Button>
@@ -149,14 +149,14 @@ const Index = () => {
               امتحانات تجريبية شاملة مع أسئلة محدثة وتصحيح فوري.
             </p>
             
-            {/* Updated CTA Buttons */}
-            <div className="flex flex-col gap-4 justify-center px-4 max-w-md mx-auto">
+            {/* Updated CTA Buttons - Fixed Text Overflow */}
+            <div className="flex flex-col gap-4 justify-center px-4 max-w-xs mx-auto">
               <AnimatedButton 
                 size="lg" 
                 onClick={() => handleAuth('register')}
-                icon={ArrowLeft}
+                icon={ArrowRight}
                 iconPosition="right"
-                className="w-full text-lg py-6 shadow-2xl"
+                className="w-full text-center whitespace-normal leading-tight py-5"
               >
                 ابدأ التحضير الآن
               </AnimatedButton>
@@ -165,7 +165,7 @@ const Index = () => {
                 variant="outline" 
                 size="lg"
                 onClick={() => handleAuth('login')}
-                className="w-full text-lg py-6 border-2"
+                className="w-full text-center whitespace-normal leading-tight py-5 border-2"
               >
                 لديك حساب؟ سجل دخولك
               </AnimatedButton>
@@ -253,13 +253,13 @@ const Index = () => {
               <p className="text-lg md:text-xl text-gray-600 mb-8">
                 انضم إلى آلاف المرشحين الذين حققوا النجاح معنا
               </p>
-              <div className="max-w-sm mx-auto">
+              <div className="max-w-xs mx-auto">
                 <AnimatedButton 
                   size="lg"
                   onClick={() => handleAuth('register')}
-                  icon={ArrowLeft}
+                  icon={ArrowRight}
                   iconPosition="right"
-                  className="w-full text-xl py-6 shadow-2xl"
+                  className="w-full text-center whitespace-normal leading-tight py-5 shadow-2xl"
                 >
                   ابدأ الآن مجاناً
                 </AnimatedButton>
