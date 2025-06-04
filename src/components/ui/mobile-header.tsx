@@ -29,10 +29,11 @@ export const MobileHeader = ({
 }: MobileHeaderProps) => {
   return (
     <header className={cn(
-      "sticky top-0 z-40 bg-white/95 backdrop-blur-lg border-b border-gray-100 safe-area-pt",
+      "sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-emerald-100/50 safe-area-pt",
+      "shadow-sm shadow-emerald-50/50",
       className
     )}>
-      <div className="flex items-center justify-between px-4 py-3 min-h-[56px]">
+      <div className="flex items-center justify-between px-4 py-4 min-h-[64px]">
         {/* Left Section */}
         <div className="flex items-center gap-3 flex-1">
           {showBackButton && onBack && (
@@ -40,7 +41,7 @@ export const MobileHeader = ({
               variant="ghost"
               size="icon"
               onClick={onBack}
-              className="w-9 h-9 rounded-full"
+              className="w-10 h-10 rounded-xl hover:bg-emerald-50 transition-all duration-200"
             >
               <ArrowRight className="w-5 h-5" />
             </Button>
@@ -51,7 +52,7 @@ export const MobileHeader = ({
               variant="ghost"
               size="icon"
               onClick={onMenu}
-              className="w-9 h-9 rounded-full"
+              className="w-10 h-10 rounded-xl hover:bg-emerald-50 transition-all duration-200"
             >
               <Menu className="w-5 h-5" />
             </Button>
@@ -72,7 +73,7 @@ export const MobileHeader = ({
         </div>
 
         {/* Right Section */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {rightAction}
         </div>
       </div>

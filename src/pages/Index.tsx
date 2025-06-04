@@ -143,26 +143,29 @@ const Index = () => {
               </span>
               في بريد الجزائر
             </h1>
-            <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed px-4">
+            <p className="text-lg md:text-xl text-gray-600 mb-10 leading-relaxed px-4">
               منصة تفاعلية متطورة للتحضير للامتحان الرسمي لمنصب مكلف بالزبائن في مؤسسة بريد الجزائر.
               <br className="hidden md:block" />
               امتحانات تجريبية شاملة مع أسئلة محدثة وتصحيح فوري.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center px-4">
+            
+            {/* Updated CTA Buttons */}
+            <div className="flex flex-col gap-4 justify-center px-4 max-w-md mx-auto">
               <AnimatedButton 
                 size="lg" 
                 onClick={() => handleAuth('register')}
                 icon={ArrowLeft}
                 iconPosition="right"
-                className="text-lg px-8 py-6 rounded-xl shadow-lg hover:shadow-xl w-full sm:w-auto"
+                className="w-full text-lg py-6 shadow-2xl"
               >
                 ابدأ التحضير الآن
               </AnimatedButton>
+              
               <AnimatedButton 
                 variant="outline" 
                 size="lg"
                 onClick={() => handleAuth('login')}
-                className="text-lg px-8 py-6 rounded-xl border-2 w-full sm:w-auto"
+                className="w-full text-lg py-6 border-2"
               >
                 لديك حساب؟ سجل دخولك
               </AnimatedButton>
@@ -181,8 +184,8 @@ const Index = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <MobileCard hover className="group">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+              <div className="text-center p-2">
+                <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                   <BookOpen className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">10 امتحانات تجريبية</h3>
@@ -193,8 +196,8 @@ const Index = () => {
             </MobileCard>
 
             <MobileCard hover className="group">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+              <div className="text-center p-2">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                   <Award className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">تصحيح فوري ومفصل</h3>
@@ -205,8 +208,8 @@ const Index = () => {
             </MobileCard>
 
             <MobileCard hover className="group md:col-span-2 lg:col-span-1">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+              <div className="text-center p-2">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                   <Users className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">محتوى محدث</h3>
@@ -223,15 +226,15 @@ const Index = () => {
       <section className="py-12 md:py-20 px-4">
         <div className="container mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
-            <GradientCard variant="primary" className="p-6 group">
+            <GradientCard variant="primary" className="p-8 group">
               <div className="text-4xl md:text-5xl font-bold mb-2 group-hover:scale-110 transition-transform duration-300">+500</div>
               <div className="text-lg md:text-xl opacity-90">سؤال متنوع</div>
             </GradientCard>
-            <GradientCard variant="secondary" className="p-6 group">
+            <GradientCard variant="secondary" className="p-8 group">
               <div className="text-4xl md:text-5xl font-bold mb-2 group-hover:scale-110 transition-transform duration-300">+1000</div>
               <div className="text-lg md:text-xl opacity-90">مرشح ناجح</div>
             </GradientCard>
-            <GradientCard variant="accent" className="p-6 group sm:col-span-3 lg:col-span-1">
+            <GradientCard variant="accent" className="p-8 group sm:col-span-3 lg:col-span-1">
               <div className="text-4xl md:text-5xl font-bold mb-2 group-hover:scale-110 transition-transform duration-300">95%</div>
               <div className="text-lg md:text-xl opacity-90">معدل النجاح</div>
             </GradientCard>
@@ -250,15 +253,17 @@ const Index = () => {
               <p className="text-lg md:text-xl text-gray-600 mb-8">
                 انضم إلى آلاف المرشحين الذين حققوا النجاح معنا
               </p>
-              <AnimatedButton 
-                size="lg"
-                onClick={() => handleAuth('register')}
-                icon={ArrowLeft}
-                iconPosition="right"
-                className="text-xl px-12 py-6 rounded-xl shadow-lg hover:shadow-xl w-full sm:w-auto"
-              >
-                ابدأ الآن مجاناً
-              </AnimatedButton>
+              <div className="max-w-sm mx-auto">
+                <AnimatedButton 
+                  size="lg"
+                  onClick={() => handleAuth('register')}
+                  icon={ArrowLeft}
+                  iconPosition="right"
+                  className="w-full text-xl py-6 shadow-2xl"
+                >
+                  ابدأ الآن مجاناً
+                </AnimatedButton>
+              </div>
             </div>
           </MobileCard>
         </div>

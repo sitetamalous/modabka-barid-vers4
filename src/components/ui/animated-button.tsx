@@ -28,16 +28,16 @@ export const AnimatedButton = ({
   type = "button"
 }: AnimatedButtonProps) => {
   const variants = {
-    primary: "bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white shadow-lg hover:shadow-xl",
-    secondary: "bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white shadow-lg hover:shadow-xl",
-    outline: "border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-600",
-    ghost: "text-gray-600 hover:text-emerald-600 hover:bg-emerald-50"
+    primary: "bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white shadow-xl hover:shadow-2xl border-0",
+    secondary: "bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white shadow-xl hover:shadow-2xl border-0",
+    outline: "border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-600 bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl",
+    ghost: "text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 bg-white/50 backdrop-blur-sm shadow-md hover:shadow-lg"
   };
 
   const sizes = {
-    sm: "px-4 py-2 text-sm",
-    md: "px-6 py-3 text-base",
-    lg: "px-8 py-4 text-lg"
+    sm: "px-6 py-3 text-sm min-h-[44px]",
+    md: "px-8 py-4 text-base min-h-[50px]",
+    lg: "px-10 py-5 text-lg min-h-[56px]"
   };
 
   return (
@@ -46,16 +46,18 @@ export const AnimatedButton = ({
       disabled={disabled}
       type={type}
       className={cn(
-        "transform transition-all duration-200 hover:scale-105 active:scale-95 rounded-xl font-semibold",
+        "transform transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] rounded-2xl font-bold",
+        "flex items-center justify-center gap-3 whitespace-nowrap leading-tight",
+        "focus:ring-4 focus:ring-emerald-200 focus:outline-none",
         variants[variant],
         sizes[size],
         className
       )}
     >
-      <div className="flex items-center gap-2">
-        {Icon && iconPosition === "left" && <Icon className="w-5 h-5" />}
-        {children}
-        {Icon && iconPosition === "right" && <Icon className="w-5 h-5" />}
+      <div className="flex items-center justify-center gap-3">
+        {Icon && iconPosition === "left" && <Icon className="w-5 h-5 flex-shrink-0" />}
+        <span className="font-bold leading-none">{children}</span>
+        {Icon && iconPosition === "right" && <Icon className="w-5 h-5 flex-shrink-0" />}
       </div>
     </Button>
   );
