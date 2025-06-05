@@ -16,6 +16,7 @@ const AuthLayout = ({ children }: AuthLayoutProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -99,7 +100,9 @@ const AuthLayout = ({ children }: AuthLayoutProps) => {
         <AuthModal 
           isOpen={showAuthModal} 
           onClose={() => setShowAuthModal(false)}
+          mode={authMode}
           onSuccess={() => setShowAuthModal(false)}
+          onSwitchMode={setAuthMode}
         />
       </>
     );
