@@ -90,7 +90,7 @@ const AuthLayout = ({ children }: AuthLayoutProps) => {
         </div>
       </div>
     );
-  }
+  };
 
   if (!user || !session) {
     return (
@@ -99,7 +99,7 @@ const AuthLayout = ({ children }: AuthLayoutProps) => {
         <AuthModal 
           isOpen={showAuthModal} 
           onClose={() => setShowAuthModal(false)}
-          onAuthSuccess={() => setShowAuthModal(false)}
+          onSuccess={() => setShowAuthModal(false)}
         />
       </>
     );

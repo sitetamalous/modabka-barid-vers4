@@ -2,8 +2,8 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import HeroSection from "@/components/HeroSection";
-import FeatureCard from "@/components/FeatureCard";
+import { HeroSection } from "@/components/HeroSection";
+import { FeatureCard } from "@/components/FeatureCard";
 import { AnimatedButton } from "@/components/ui/animated-button";
 import { 
   BookOpen, 
@@ -68,7 +68,10 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50" dir="rtl">
       {/* Hero Section */}
-      <HeroSection />
+      <HeroSection 
+        onLogin={() => navigate('/auth')}
+        onRegister={() => navigate('/auth')}
+      />
 
       {/* Features Section */}
       <section className="py-20 px-4">
