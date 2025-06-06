@@ -65,11 +65,11 @@ const Results = () => {
     return "text-red-600";
   };
 
-  const getScoreBadgeVariant = (score: number): "primary" | "secondary" | "outline" | "ghost" => {
-    if (score >= 85) return "primary";
+  const getScoreBadgeVariant = (score: number): "default" | "secondary" | "destructive" | "outline" => {
+    if (score >= 85) return "default";
     if (score >= 70) return "secondary";
     if (score >= 50) return "outline";
-    return "ghost";
+    return "destructive";
   };
 
   const getPerformanceCategory = (score: number) => {
@@ -370,6 +370,14 @@ const Results = () => {
       )}
     </div>
   );
+};
+
+const getPerformanceCategory = (score: number) => {
+  if (score >= 90) return { label: "ممتاز", color: "text-emerald-600", icon: Award };
+  if (score >= 80) return { label: "جيد جداً", color: "text-blue-600", icon: Trophy };
+  if (score >= 70) return { label: "جيد", color: "text-green-600", icon: TrendingUp };
+  if (score >= 60) return { label: "مقبول", color: "text-yellow-600", icon: Target };
+  return { label: "ضعيف", color: "text-red-600", icon: TrendingDown };
 };
 
 export default Results;
