@@ -66,8 +66,8 @@ const Results = () => {
     return "text-red-600";
   };
 
-  const getScoreBadgeVariant = (score: number): "default" | "secondary" | "destructive" | "outline" => {
-    if (score >= 85) return "default";
+  const getScoreBadgeVariant = (score: number): "secondary" | "destructive" | "outline" => {
+    if (score >= 85) return "secondary";
     if (score >= 70) return "secondary";
     if (score >= 50) return "outline";
     return "destructive";
@@ -79,6 +79,16 @@ const Results = () => {
     if (score >= 70) return { label: "جيد", color: "text-green-600", icon: TrendingUp };
     if (score >= 60) return { label: "مقبول", color: "text-yellow-600", icon: Target };
     return { label: "ضعيف", color: "text-red-600", icon: TrendingDown };
+  };
+
+  // Handle review exam - show detailed answers (no new attempt)
+  const handleReviewExam = (attemptId: string) => {
+    setExpandedAttempt(expandedAttempt === attemptId ? null : attemptId);
+  };
+
+  // Handle retake exam - start new attempt
+  const handleRetakeExam = (examId: string) => {
+    setSelectedExamForRetake(examId);
   };
 
   if (isLoading) {
@@ -309,9 +319,7 @@ const Results = () => {
                       <AnimatedButton
                         variant="outline"
                         size="sm"
-                        onClick={() => setExpandedAttempt(
-                          expandedAttempt === attempt.id ? null : attempt.id
-                        )}
+                        onClick={() => handleReviewExam(attempt.id)}
                         icon={Eye}
                         iconPosition="right"
                         className="flex-1"
@@ -322,7 +330,7 @@ const Results = () => {
                       <AnimatedButton
                         variant="primary"
                         size="sm"
-                        onClick={() => setSelectedExamForRetake(attempt.exam_id)}
+                        onClick={() => handleRetakeExam(attempt.exam_id)}
                         icon={RotateCcw}
                         iconPosition="right"
                         className="flex-1"
@@ -331,7 +339,7 @@ const Results = () => {
                       </AnimatedButton>
                     </div>
 
-                    {/* Expanded Details - This shows the detailed review when "مراجعة الإجابات" is clicked */}
+                    {/* Expanded Details - Shows detailed review when "مراجعة الإجابات" is clicked */}
                     {expandedAttempt === attempt.id && (
                       <div className="mt-4 border-t pt-4">
                         <DetailedAnswerReview attemptId={attempt.id} />
