@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { GradientCard } from "@/components/ui/gradient-card";
@@ -9,6 +10,7 @@ import { BottomNavigation } from "@/components/ui/bottom-navigation";
 import { MobileHeader } from "@/components/ui/mobile-header";
 import { MobileCard } from "@/components/ui/mobile-card";
 import { FloatingActionButton } from "@/components/ui/floating-action-button";
+import { DesktopNavigation } from "@/components/ui/desktop-navigation";
 import { 
   GraduationCap, 
   LogOut, 
@@ -136,21 +138,21 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
               />
             </div>
 
-            {/* Recent Exams - Mobile Optimized */}
+            {/* All Exams - Show all exams instead of just 4 */}
             <div className="px-4 md:px-0">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-900">الامتحانات الأخيرة</h3>
+                <h3 className="text-xl font-bold text-gray-900">جميع الامتحانات المتاحة</h3>
                 <Button 
                   variant="ghost" 
                   size="sm"
                   onClick={() => setActiveTab('exams')}
                   className="text-emerald-600"
                 >
-                  عرض الكل
+                  عرض تفاصيل أكثر
                 </Button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {exams?.slice(0, 4).map((exam) => {
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+                {exams?.map((exam) => {
                   const examStatus = getExamStatus(exam.id);
                   return (
                     <ExamCard
@@ -280,48 +282,34 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
   return (
     <div className="min-h-dvh bg-gradient-to-br from-emerald-50 via-white to-blue-50" dir="rtl">
       {/* Mobile Header */}
-      <MobileHeader
-        title="لوحة التحكم"
-        subtitle="منصة التحضير لامتحان بريد الجزائر"
-        rightAction={
-          <div className="hidden md:flex">
-            <AnimatedButton 
-              variant="outline" 
-              onClick={onLogout}
-              icon={LogOut}
-              iconPosition="right"
-              size="sm"
-            >
-              تسجيل الخروج
-            </AnimatedButton>
-          </div>
-        }
-      />
-
-      {/* Desktop Header */}
-      <header className="hidden md:block bg-white/90 backdrop-blur-lg border-b border-emerald-100 sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <GraduationCap className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">لوحة التحكم</h1>
-                <p className="text-gray-600">مرحباً بك في منصة التحضير لامتحان بريد الجزائر</p>
-              </div>
+      <div className="md:hidden">
+        <MobileHeader
+          title="لوحة التحكم"
+          subtitle="منصة التحضير لامتحان بريد الجزائر"
+          rightAction={
+            <div className="hidden md:flex">
+              <AnimatedButton 
+                variant="outline" 
+                onClick={onLogout}
+                icon={LogOut}
+                iconPosition="right"
+                size="sm"
+              >
+                تسجيل الخروج
+              </AnimatedButton>
             </div>
-            <AnimatedButton 
-              variant="outline" 
-              onClick={onLogout}
-              icon={LogOut}
-              iconPosition="right"
-            >
-              تسجيل الخروج
-            </AnimatedButton>
-          </div>
-        </div>
-      </header>
+          }
+        />
+      </div>
+
+      {/* Desktop Navigation */}
+      <div className="hidden md:block">
+        <DesktopNavigation 
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          onLogout={onLogout}
+        />
+      </div>
 
       {/* Main Content */}
       <main className="pb-20 md:pb-8">
@@ -331,21 +319,25 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
       </main>
 
       {/* Bottom Navigation - Mobile Only */}
-      <BottomNavigation items={bottomNavItems} />
+      <div className="md:hidden">
+        <BottomNavigation items={bottomNavItems} />
+      </div>
 
       {/* Floating Action Button - Mobile Only */}
       {activeTab === 'exams' && (
-        <FloatingActionButton
-          icon={Plus}
-          onClick={() => {
-            // Could open a quick exam selector or start the first available exam
-            if (exams && exams.length > 0) {
-              setSelectedExam(exams[0].id);
-            }
-          }}
-          label="بدء امتحان سريع"
-          position="bottom-right"
-        />
+        <div className="md:hidden">
+          <FloatingActionButton
+            icon={Plus}
+            onClick={() => {
+              // Could open a quick exam selector or start the first available exam
+              if (exams && exams.length > 0) {
+                setSelectedExam(exams[0].id);
+              }
+            }}
+            label="بدء امتحان سريع"
+            position="bottom-right"
+          />
+        </div>
       )}
 
       {/* Exam Modal */}
