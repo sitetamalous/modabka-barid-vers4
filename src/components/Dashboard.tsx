@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import ExamModal from "@/components/ExamModal";
 import { useExams } from "@/hooks/useExams";
+import { useAllExams } from "@/hooks/useAllExams";
 import { useUserAttempts } from "@/hooks/useUserAttempts";
 import { useNavigate } from "react-router-dom";
 
@@ -36,7 +37,12 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
   const navigate = useNavigate();
   
   const { data: exams, isLoading: examsLoading } = useExams();
+  const { data: allExams, isLoading: allExamsLoading } = useAllExams();
   const { data: userAttempts, isLoading: attemptsLoading } = useUserAttempts();
+
+  // Log exam data for debugging
+  console.log('Dashboard - Exams data:', exams);
+  console.log('Dashboard - All exams data:', allExams);
 
   // Calculate statistics
   const completedAttempts = userAttempts?.filter(attempt => attempt.is_completed) || [];
@@ -84,7 +90,7 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
     }
   ];
 
-  if (examsLoading || attemptsLoading) {
+  if (examsLoading || attemptsLoading || allExamsLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50 flex items-center justify-center" dir="rtl">
         <div className="flex flex-col items-center gap-4 p-8">
