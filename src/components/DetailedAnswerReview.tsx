@@ -123,7 +123,7 @@ export const DetailedAnswerReview = ({ attemptId }: DetailedAnswerReviewProps) =
                       </h5>
                       <div className="flex items-center gap-2">
                         <Badge 
-                          variant={userAnswer.is_correct ? "default" : "destructive"}
+                          variant={userAnswer.is_correct ? "secondary" : "destructive"}
                         >
                           {userAnswer.is_correct ? 'إجابة صحيحة' : 'إجابة خاطئة'}
                         </Badge>
@@ -185,7 +185,7 @@ export const DetailedAnswerReview = ({ attemptId }: DetailedAnswerReviewProps) =
                             borderColor = 'border-emerald-300 bg-emerald-100';
                             textColor = 'text-emerald-800';
                             badgeContent = (
-                              <Badge variant="default" className="text-xs bg-emerald-600">
+                              <Badge variant="secondary" className="text-xs bg-emerald-600">
                                 ✓ الإجابة الصحيحة
                               </Badge>
                             );
@@ -203,7 +203,7 @@ export const DetailedAnswerReview = ({ attemptId }: DetailedAnswerReviewProps) =
 
                           if (isUserAnswer && isCorrectAnswer) {
                             badgeContent = (
-                              <Badge variant="default" className="text-xs bg-emerald-600">
+                              <Badge variant="secondary" className="text-xs bg-emerald-600">
                                 ✓ إجابتك الصحيحة
                               </Badge>
                             );
