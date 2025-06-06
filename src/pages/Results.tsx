@@ -320,7 +320,7 @@ const Results = () => {
                       </AnimatedButton>
                       
                       <AnimatedButton
-                        variant="default"
+                        variant="primary"
                         size="sm"
                         onClick={() => setSelectedExamForRetake(attempt.exam_id)}
                         icon={RotateCcw}
