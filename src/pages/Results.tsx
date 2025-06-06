@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useUserAttempts } from "@/hooks/useUserAttempts";
 import { useExamQuestions } from "@/hooks/useExams";
@@ -330,9 +331,11 @@ const Results = () => {
                       </AnimatedButton>
                     </div>
 
-                    {/* Expanded Details */}
+                    {/* Expanded Details - This shows the detailed review when "مراجعة الإجابات" is clicked */}
                     {expandedAttempt === attempt.id && (
-                      <DetailedAnswerReview attemptId={attempt.id} />
+                      <div className="mt-4 border-t pt-4">
+                        <DetailedAnswerReview attemptId={attempt.id} />
+                      </div>
                     )}
                   </div>
                 </div>
@@ -360,7 +363,7 @@ const Results = () => {
         </div>
       </div>
 
-      {/* Exam Retake Modal */}
+      {/* Exam Retake Modal - This opens when "إعادة الاختبار" is clicked */}
       {selectedExamForRetake && (
         <ExamModal
           examId={selectedExamForRetake}
@@ -370,14 +373,6 @@ const Results = () => {
       )}
     </div>
   );
-};
-
-const getPerformanceCategory = (score: number) => {
-  if (score >= 90) return { label: "ممتاز", color: "text-emerald-600", icon: Award };
-  if (score >= 80) return { label: "جيد جداً", color: "text-blue-600", icon: Trophy };
-  if (score >= 70) return { label: "جيد", color: "text-green-600", icon: TrendingUp };
-  if (score >= 60) return { label: "مقبول", color: "text-yellow-600", icon: Target };
-  return { label: "ضعيف", color: "text-red-600", icon: TrendingDown };
 };
 
 export default Results;

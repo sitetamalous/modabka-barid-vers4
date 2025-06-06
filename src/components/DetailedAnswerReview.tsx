@@ -64,11 +64,11 @@ export const DetailedAnswerReview = ({ attemptId }: DetailedAnswerReviewProps) =
   const totalQuestions = userAnswers.length;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" dir="rtl">
       {/* Summary */}
       <div className="flex items-center justify-between p-4 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg">
         <div>
-          <h4 className="font-semibold text-gray-900">ملخص الإجابات</h4>
+          <h4 className="font-semibold text-gray-900">ملخص الإجابات التفصيلي</h4>
           <p className="text-sm text-gray-600">
             {correctAnswers} إجابة صحيحة من أصل {totalQuestions} سؤال
           </p>
@@ -83,7 +83,7 @@ export const DetailedAnswerReview = ({ attemptId }: DetailedAnswerReviewProps) =
         </div>
       </div>
 
-      {/* Questions List */}
+      {/* Questions List with detailed answers */}
       <div className="space-y-3">
         {userAnswers.map((userAnswer, index) => {
           const question = userAnswer.questions;
@@ -100,12 +100,12 @@ export const DetailedAnswerReview = ({ attemptId }: DetailedAnswerReviewProps) =
               key={userAnswer.id} 
               className={`border-2 transition-all ${
                 userAnswer.is_correct 
-                  ? 'border-emerald-200 bg-emerald-50' 
-                  : 'border-red-200 bg-red-50'
+                  ? 'border-emerald-200 bg-emerald-50/50' 
+                  : 'border-red-200 bg-red-50/50'
               }`}
             >
               <CardContent className="p-4">
-                {/* Question Header */}
+                {/* Question Header with answer status */}
                 <div 
                   className="flex items-start gap-3 cursor-pointer"
                   onClick={() => toggleQuestion(userAnswer.question_id)}
@@ -125,7 +125,7 @@ export const DetailedAnswerReview = ({ attemptId }: DetailedAnswerReviewProps) =
                         <Badge 
                           variant={userAnswer.is_correct ? "default" : "destructive"}
                         >
-                          {userAnswer.is_correct ? 'صحيح' : 'خطأ'}
+                          {userAnswer.is_correct ? 'إجابة صحيحة' : 'إجابة خاطئة'}
                         </Badge>
                         {isExpanded ? (
                           <ChevronUp className="w-5 h-5 text-gray-400" />
@@ -135,64 +135,103 @@ export const DetailedAnswerReview = ({ attemptId }: DetailedAnswerReviewProps) =
                       </div>
                     </div>
                     
-                    <p className="text-gray-700 mt-2">
+                    <p className="text-gray-700 mt-2 text-base">
                       {question?.question_text}
                     </p>
+
+                    {/* Quick summary - always visible */}
+                    <div className="mt-3 p-3 bg-white/80 rounded-lg border">
+                      <div className="flex items-center justify-between text-sm">
+                        <div>
+                          <span className="text-gray-600">إجابتك: </span>
+                          <span className={userAnswer.is_correct ? 'text-emerald-600 font-medium' : 'text-red-600 font-medium'}>
+                            {selectedOption ? 
+                              `${String.fromCharCode(65 + selectedOption.option_index)}) ${selectedOption.option_text}` : 
+                              'لم تجب على هذا السؤال'
+                            }
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {!userAnswer.is_correct && correctOption && (
+                        <div className="mt-2 pt-2 border-t border-gray-200">
+                          <span className="text-gray-600">الإجابة الصحيحة: </span>
+                          <span className="text-emerald-600 font-medium">
+                            {String.fromCharCode(65 + correctOption.option_index)}) {correctOption.option_text}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* Expanded Content */}
+                {/* Expanded Content - Shows all options with indicators */}
                 {isExpanded && (
                   <div className="mt-4 pr-9 space-y-4">
-                    {/* Answer Options */}
-                    <div className="space-y-2">
-                      <h6 className="font-medium text-gray-900">الخيارات:</h6>
+                    {/* All Answer Options with clear indicators */}
+                    <div className="space-y-3">
+                      <h6 className="font-medium text-gray-900 text-base">جميع الخيارات المتاحة:</h6>
                       {question?.answer_options
                         ?.sort((a, b) => a.option_index - b.option_index)
-                        .map((option) => (
-                          <div
-                            key={option.id}
-                            className={`p-3 rounded-lg border-2 ${
-                              option.is_correct
-                                ? 'border-emerald-300 bg-emerald-100 text-emerald-800'
-                                : option.id === userAnswer.selected_option_id && !option.is_correct
-                                ? 'border-red-300 bg-red-100 text-red-800'
-                                : 'border-gray-200 bg-gray-50 text-gray-700'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <span>
-                                {String.fromCharCode(65 + option.option_index)}) {option.option_text}
-                              </span>
-                              <div className="flex items-center gap-2">
-                                {option.is_correct && (
-                                  <Badge variant="default" className="text-xs">
-                                    الإجابة الصحيحة
-                                  </Badge>
-                                )}
-                                {option.id === userAnswer.selected_option_id && !option.is_correct && (
-                                  <Badge variant="destructive" className="text-xs">
-                                    إجابتك
-                                  </Badge>
-                                )}
-                                {option.id === userAnswer.selected_option_id && option.is_correct && (
-                                  <Badge variant="default" className="text-xs">
-                                    إجابتك الصحيحة
-                                  </Badge>
-                                )}
+                        .map((option) => {
+                          const isUserAnswer = option.id === userAnswer.selected_option_id;
+                          const isCorrectAnswer = option.is_correct;
+                          
+                          let borderColor = 'border-gray-200 bg-gray-50';
+                          let textColor = 'text-gray-700';
+                          let badgeContent = null;
+
+                          if (isCorrectAnswer) {
+                            borderColor = 'border-emerald-300 bg-emerald-100';
+                            textColor = 'text-emerald-800';
+                            badgeContent = (
+                              <Badge variant="default" className="text-xs bg-emerald-600">
+                                ✓ الإجابة الصحيحة
+                              </Badge>
+                            );
+                          }
+
+                          if (isUserAnswer && !isCorrectAnswer) {
+                            borderColor = 'border-red-300 bg-red-100';
+                            textColor = 'text-red-800';
+                            badgeContent = (
+                              <Badge variant="destructive" className="text-xs">
+                                ✗ إجابتك الخاطئة
+                              </Badge>
+                            );
+                          }
+
+                          if (isUserAnswer && isCorrectAnswer) {
+                            badgeContent = (
+                              <Badge variant="default" className="text-xs bg-emerald-600">
+                                ✓ إجابتك الصحيحة
+                              </Badge>
+                            );
+                          }
+
+                          return (
+                            <div
+                              key={option.id}
+                              className={`p-4 rounded-lg border-2 ${borderColor}`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className={`${textColor} font-medium`}>
+                                  {String.fromCharCode(65 + option.option_index)}) {option.option_text}
+                                </span>
+                                {badgeContent}
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                     </div>
 
-                    {/* Explanation */}
+                    {/* Explanation if available */}
                     {question?.explanation && (
                       <div className="bg-blue-50 border-r-4 border-blue-400 p-4 rounded">
                         <div className="flex items-start gap-2">
                           <Lightbulb className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                           <div>
-                            <h6 className="font-medium text-blue-900 mb-1">الشرح:</h6>
+                            <h6 className="font-medium text-blue-900 mb-1">شرح تفصيلي:</h6>
                             <p className="text-blue-800 leading-relaxed">
                               {question.explanation}
                             </p>
@@ -201,18 +240,18 @@ export const DetailedAnswerReview = ({ attemptId }: DetailedAnswerReviewProps) =
                       </div>
                     )}
 
-                    {/* Performance Tip */}
+                    {/* Performance Tip for wrong answers */}
                     {!userAnswer.is_correct && (
                       <div className="bg-yellow-50 border-r-4 border-yellow-400 p-4 rounded">
                         <div className="flex items-start gap-2">
                           <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                           <div>
-                            <h6 className="font-medium text-yellow-900 mb-1">نصيحة:</h6>
+                            <h6 className="font-medium text-yellow-900 mb-1">نصيحة للتحسين:</h6>
                             <p className="text-yellow-800 text-sm">
                               راجع هذا الموضوع مرة أخرى لتحسين أداءك في الاختبارات القادمة.
                               {correctOption && (
-                                <span className="block mt-1">
-                                  الإجابة الصحيحة كانت: <strong>{correctOption.option_text}</strong>
+                                <span className="block mt-2 font-medium">
+                                  💡 تذكر: الإجابة الصحيحة هي "{correctOption.option_text}"
                                 </span>
                               )}
                             </p>

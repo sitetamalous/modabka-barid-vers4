@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -29,9 +30,23 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
   const startExamMutation = useStartExamAttempt();
   const submitExamMutation = useSubmitExamAttempt();
 
+  // Reset all states when modal opens (for retake functionality)
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentQuestion(0);
+      setAnswers({});
+      setTimeLeft(3600);
+      setIsSubmitted(false);
+      setShowResults(false);
+      setAttemptId(null);
+      setStartTime(null);
+      setSubmissionResult(null);
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     if (isOpen && !isSubmitted && !attemptId && questions) {
-      // Start exam attempt
+      // Start new exam attempt
       startExamMutation.mutate(
         { examId, totalQuestions: questions.length },
         {
@@ -124,7 +139,8 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  const resetExam = () => {
+  const startNewAttempt = () => {
+    // Reset all states for a new attempt
     setCurrentQuestion(0);
     setAnswers({});
     setTimeLeft(3600);
@@ -141,7 +157,7 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
         <DialogContent className="max-w-md" dir="rtl">
           <div className="flex flex-col items-center justify-center py-8">
             <Loader2 className="w-8 h-8 animate-spin text-emerald-600 mb-4" />
-            <p className="text-lg text-gray-700">جاري تحضير الامتحان...</p>
+            <p className="text-lg text-gray-700">جاري تحضير الامتحان الجديد...</p>
           </div>
         </DialogContent>
       </Dialog>
@@ -234,7 +250,7 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
             {/* Action Buttons */}
             <div className="flex gap-4 justify-center pt-4">
               <Button 
-                onClick={resetExam} 
+                onClick={startNewAttempt} 
                 className="bg-gradient-to-r from-emerald-500 to-blue-600 px-8 py-3 text-lg"
               >
                 إعادة المحاولة
