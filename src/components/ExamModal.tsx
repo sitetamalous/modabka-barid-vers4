@@ -1,12 +1,13 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
-import { Clock, CheckCircle, AlertCircle, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Clock, CheckCircle, AlertCircle, ArrowRight, ArrowLeft, Loader2, Trophy, Target } from "lucide-react";
 import { useExamQuestions } from "@/hooks/useExams";
 import { useStartExamAttempt, useSubmitExamAttempt } from "@/hooks/useUserAttempts";
+import { DetailedAnswerReview } from "@/components/DetailedAnswerReview";
 
 interface ExamModalProps {
   examId: string;
@@ -22,6 +23,7 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
   const [showResults, setShowResults] = useState(false);
   const [attemptId, setAttemptId] = useState<string | null>(null);
   const [startTime, setStartTime] = useState<Date | null>(null);
+  const [submissionResult, setSubmissionResult] = useState<{ score: number; correctAnswers: number } | null>(null);
 
   const { data: questions, isLoading: questionsLoading } = useExamQuestions(examId);
   const startExamMutation = useStartExamAttempt();
@@ -86,9 +88,10 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
     submitExamMutation.mutate(
       { attemptId, answers: answersData, timeTaken },
       {
-        onSuccess: () => {
+        onSuccess: (result) => {
           setIsSubmitted(true);
           setShowResults(true);
+          setSubmissionResult(result);
         }
       }
     );
@@ -107,6 +110,14 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
     return Math.round((correct / questions.length) * 100);
   };
 
+  const getPerformanceMessage = (score: number) => {
+    if (score >= 90) return { message: "أداء ممتاز! تهانينا", color: "text-emerald-600", icon: Trophy };
+    if (score >= 80) return { message: "أداء جيد جداً", color: "text-blue-600", icon: Trophy };
+    if (score >= 70) return { message: "أداء جيد، يمكن التحسين", color: "text-green-600", icon: Target };
+    if (score >= 60) return { message: "أداء مقبول، يحتاج تطوير", color: "text-yellow-600", icon: Target };
+    return { message: "يحتاج مراجعة وتدريب إضافي", color: "text-red-600", icon: AlertCircle };
+  };
+
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -121,6 +132,7 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
     setShowResults(false);
     setAttemptId(null);
     setStartTime(null);
+    setSubmissionResult(null);
   };
 
   if (questionsLoading || startExamMutation.isPending) {
@@ -151,100 +163,87 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
   }
 
   if (showResults) {
-    const score = calculateScore();
+    const score = submissionResult?.score || calculateScore();
+    const correctAnswers = submissionResult?.correctAnswers || 0;
+    const performance = getPerformanceMessage(score);
+    const Icon = performance.icon;
+
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" dir="rtl">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto" dir="rtl">
           <DialogHeader>
             <DialogTitle className="text-2xl text-center">نتائج الامتحان</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-6">
-            {/* Score Card */}
+            {/* Enhanced Score Card */}
             <Card className="border-0 shadow-lg bg-gradient-to-r from-emerald-50 to-blue-50">
-              <CardContent className="p-6 text-center">
-                <div className="text-6xl font-bold text-emerald-600 mb-2">{score}%</div>
-                <div className="text-xl text-gray-700">
-                  أجبت على {Object.keys(answers).length} من {questions.length} سؤال
+              <CardContent className="p-8 text-center">
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <Icon className={`w-12 h-12 ${performance.color}`} />
+                  <div className="text-6xl font-bold text-emerald-600">{score}%</div>
                 </div>
-                <div className="text-lg text-gray-600 mt-2">
-                  إجابات صحيحة: {questions.filter(q => {
-                    const selectedOptionId = answers[q.id];
-                    const selectedOption = q.answer_options.find(opt => opt.id === selectedOptionId);
-                    return selectedOption?.is_correct;
-                  }).length}
+                
+                <div className={`text-xl font-semibold ${performance.color} mb-2`}>
+                  {performance.message}
+                </div>
+                
+                <div className="text-lg text-gray-700 mb-4">
+                  أجبت بشكل صحيح على {correctAnswers} من {questions.length} سؤال
+                </div>
+
+                <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-emerald-600">{correctAnswers}</div>
+                    <div className="text-sm text-gray-600">إجابات صحيحة</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-red-600">{questions.length - correctAnswers}</div>
+                    <div className="text-sm text-gray-600">إجابات خاطئة</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {Math.floor((3600 - timeLeft) / 60)}
+                    </div>
+                    <div className="text-sm text-gray-600">دقيقة مستغرقة</div>
+                  </div>
+                </div>
+
+                {/* Performance Badge */}
+                <div className="mt-6">
+                  <Badge 
+                    variant={score >= 70 ? "default" : "destructive"}
+                    className="text-lg px-4 py-2"
+                  >
+                    {score >= 70 ? "نجح" : "لم ينجح"} - النسبة المطلوبة 70%
+                  </Badge>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Detailed Results */}
-            <div className="space-y-4">
-              <h3 className="text-xl font-bold">مراجعة الأسئلة والإجابات:</h3>
-              {questions.map((question, index) => {
-                const selectedOptionId = answers[question.id];
-                const selectedOption = question.answer_options.find(opt => opt.id === selectedOptionId);
-                const correctOption = question.answer_options.find(opt => opt.is_correct);
-                const isCorrect = selectedOption?.is_correct || false;
-                
-                return (
-                  <Card key={question.id} className={`border-2 ${isCorrect ? 'border-emerald-200 bg-emerald-50' : 'border-red-200 bg-red-50'}`}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-3 mb-3">
-                        {isCorrect ? (
-                          <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
-                        ) : (
-                          <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-1" />
-                        )}
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-lg mb-2">
-                            السؤال {index + 1}: {question.question_text}
-                          </h4>
-                          
-                          <div className="space-y-2 mb-3">
-                            {question.answer_options.map((option, optionIndex) => (
-                              <div
-                                key={option.id}
-                                className={`p-2 rounded-lg border ${
-                                  option.is_correct
-                                    ? 'border-emerald-300 bg-emerald-100 text-emerald-800'
-                                    : option.id === selectedOptionId && !option.is_correct
-                                    ? 'border-red-300 bg-red-100 text-red-800'
-                                    : 'border-gray-200 bg-gray-50'
-                                }`}
-                              >
-                                <span className="font-medium">
-                                  {String.fromCharCode(65 + optionIndex)}) {option.option_text}
-                                </span>
-                                {option.is_correct && (
-                                  <span className="mr-2 text-emerald-600 font-bold">(الإجابة الصحيحة)</span>
-                                )}
-                                {option.id === selectedOptionId && !option.is_correct && (
-                                  <span className="mr-2 text-red-600 font-bold">(إجابتك)</span>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                          
-                          {question.explanation && (
-                            <div className="bg-blue-50 border-r-4 border-blue-400 p-3 rounded">
-                              <p className="text-blue-800">
-                                <strong>الشرح:</strong> {question.explanation}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
+            {/* Detailed Answer Review */}
+            {attemptId && (
+              <Card className="border-0 shadow-lg">
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-bold mb-4">مراجعة مفصلة للإجابات</h3>
+                  <DetailedAnswerReview attemptId={attemptId} />
+                </CardContent>
+              </Card>
+            )}
 
-            <div className="flex gap-4 justify-center">
-              <Button onClick={resetExam} className="bg-gradient-to-r from-emerald-500 to-blue-600">
+            {/* Action Buttons */}
+            <div className="flex gap-4 justify-center pt-4">
+              <Button 
+                onClick={resetExam} 
+                className="bg-gradient-to-r from-emerald-500 to-blue-600 px-8 py-3 text-lg"
+              >
                 إعادة المحاولة
               </Button>
-              <Button variant="outline" onClick={onClose}>
+              <Button 
+                variant="outline" 
+                onClick={onClose}
+                className="px-8 py-3 text-lg"
+              >
                 العودة للوحة التحكم
               </Button>
             </div>

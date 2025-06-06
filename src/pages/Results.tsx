@@ -1,11 +1,13 @@
 
 import { useState } from "react";
 import { useUserAttempts } from "@/hooks/useUserAttempts";
+import { useExamQuestions } from "@/hooks/useExams";
 import { MobileHeader } from "@/components/ui/mobile-header";
 import { MobileCard } from "@/components/ui/mobile-card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { AnimatedButton } from "@/components/ui/animated-button";
 import { 
   Trophy, 
   Calendar, 
@@ -15,16 +17,23 @@ import {
   ArrowLeft,
   CheckCircle,
   XCircle,
-  BarChart3
+  BarChart3,
+  Eye,
+  RotateCcw,
+  Award,
+  TrendingDown
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import ExamModal from "@/components/ExamModal";
 
 const Results = () => {
   const navigate = useNavigate();
   const { data: userAttempts, isLoading } = useUserAttempts();
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'completed' | 'high-score'>('all');
+  const [selectedExamForRetake, setSelectedExamForRetake] = useState<string | null>(null);
+  const [expandedAttempt, setExpandedAttempt] = useState<string | null>(null);
 
   const completedAttempts = userAttempts?.filter(attempt => attempt.is_completed) || [];
   
@@ -42,6 +51,13 @@ const Results = () => {
     ? Math.max(...completedAttempts.map(attempt => attempt.score || 0))
     : 0;
 
+  const lowestScore = completedAttempts.length > 0 
+    ? Math.min(...completedAttempts.map(attempt => attempt.score || 0))
+    : 0;
+
+  const totalTimeTaken = completedAttempts.reduce((sum, attempt) => sum + (attempt.time_taken || 0), 0);
+  const averageTime = completedAttempts.length > 0 ? Math.floor(totalTimeTaken / completedAttempts.length / 60) : 0;
+
   const getScoreColor = (score: number) => {
     if (score >= 85) return "text-green-600";
     if (score >= 70) return "text-blue-600";
@@ -54,6 +70,14 @@ const Results = () => {
     if (score >= 70) return "secondary";
     if (score >= 50) return "outline";
     return "destructive";
+  };
+
+  const getPerformanceCategory = (score: number) => {
+    if (score >= 90) return { label: "ممتاز", color: "text-emerald-600", icon: Award };
+    if (score >= 80) return { label: "جيد جداً", color: "text-blue-600", icon: Trophy };
+    if (score >= 70) return { label: "جيد", color: "text-green-600", icon: TrendingUp };
+    if (score >= 60) return { label: "مقبول", color: "text-yellow-600", icon: Target };
+    return { label: "ضعيف", color: "text-red-600", icon: TrendingDown };
   };
 
   if (isLoading) {
@@ -78,15 +102,15 @@ const Results = () => {
   return (
     <div className="min-h-dvh bg-gradient-to-br from-emerald-50 via-white to-blue-50" dir="rtl">
       <MobileHeader 
-        title="النتائج"
-        subtitle="مراجعة أداءك في الامتحانات"
+        title="النتائج التفصيلية"
+        subtitle="تحليل شامل لأدائك في الامتحانات"
         showBackButton
         onBack={() => navigate('/')}
       />
 
       <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Statistics Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Enhanced Statistics Overview */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <MobileCard>
             <div className="p-4 text-center">
               <Trophy className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
@@ -110,7 +134,73 @@ const Results = () => {
               <div className="text-sm text-gray-600">امتحان مكتمل</div>
             </div>
           </MobileCard>
+
+          <MobileCard>
+            <div className="p-4 text-center">
+              <Clock className="w-8 h-8 text-purple-500 mx-auto mb-2" />
+              <div className="text-2xl font-bold text-gray-900">{averageTime}</div>
+              <div className="text-sm text-gray-600">متوسط الوقت (دقيقة)</div>
+            </div>
+          </MobileCard>
         </div>
+
+        {/* Performance Analysis */}
+        <MobileCard>
+          <div className="p-6">
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <BarChart3 className="w-6 h-6 text-emerald-600" />
+              تحليل الأداء العام
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-gray-700">التقدم العام</span>
+                  <span className="font-semibold">{averageScore.toFixed(1)}%</span>
+                </div>
+                <Progress value={averageScore} className="h-3" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div className="text-center p-3 bg-green-50 rounded-lg">
+                  <div className="text-lg font-bold text-green-600">{lowestScore}%</div>
+                  <div className="text-sm text-gray-600">أقل نتيجة</div>
+                </div>
+                <div className="text-center p-3 bg-blue-50 rounded-lg">
+                  <div className="text-lg font-bold text-blue-600">
+                    {completedAttempts.filter(a => (a.score || 0) >= 70).length}
+                  </div>
+                  <div className="text-sm text-gray-600">نجاح (70%+)</div>
+                </div>
+              </div>
+
+              {completedAttempts.length > 0 && (
+                <div className="mt-4 p-4 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg">
+                  {(() => {
+                    const performance = getPerformanceCategory(averageScore);
+                    const Icon = performance.icon;
+                    return (
+                      <div className="flex items-center gap-3">
+                        <Icon className={`w-8 h-8 ${performance.color}`} />
+                        <div>
+                          <div className={`font-bold text-lg ${performance.color}`}>
+                            مستوى الأداء: {performance.label}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {averageScore >= 70 
+                              ? "أداء ممتاز! استمر في التميز"
+                              : "يمكنك تحسين أداءك مع المزيد من التدريب"
+                            }
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+          </div>
+        </MobileCard>
 
         {/* Filters */}
         <MobileCard>
@@ -122,21 +212,21 @@ const Results = () => {
                 size="sm"
                 onClick={() => setSelectedFilter('all')}
               >
-                جميع النتائج
+                جميع النتائج ({completedAttempts.length})
               </Button>
               <Button
                 variant={selectedFilter === 'completed' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setSelectedFilter('completed')}
               >
-                مكتملة
+                مكتملة ({completedAttempts.length})
               </Button>
               <Button
                 variant={selectedFilter === 'high-score' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setSelectedFilter('high-score')}
               >
-                نتائج عالية (70%+)
+                نتائج عالية ({completedAttempts.filter(a => (a.score || 0) >= 70).length})
               </Button>
             </div>
           </div>
@@ -157,7 +247,7 @@ const Results = () => {
         ) : (
           <div className="space-y-4">
             <h3 className="text-xl font-bold text-gray-900 px-1">
-              نتائج الامتحانات ({filteredAttempts.length})
+              تفاصيل الامتحانات ({filteredAttempts.length})
             </h3>
             
             {filteredAttempts.map((attempt) => (
@@ -171,7 +261,7 @@ const Results = () => {
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Calendar className="w-4 h-4" />
                         <span>
-                          {format(new Date(attempt.completed_at!), 'dd MMMM yyyy', { locale: ar })}
+                          {format(new Date(attempt.completed_at!), 'dd MMMM yyyy - HH:mm', { locale: ar })}
                         </span>
                       </div>
                     </div>
@@ -212,6 +302,38 @@ const Results = () => {
                         </div>
                       </div>
                     </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2 pt-2">
+                      <AnimatedButton
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setExpandedAttempt(
+                          expandedAttempt === attempt.id ? null : attempt.id
+                        )}
+                        icon={Eye}
+                        iconPosition="right"
+                        className="flex-1"
+                      >
+                        {expandedAttempt === attempt.id ? 'إخفاء التفاصيل' : 'مراجعة الإجابات'}
+                      </AnimatedButton>
+                      
+                      <AnimatedButton
+                        variant="default"
+                        size="sm"
+                        onClick={() => setSelectedExamForRetake(attempt.exam_id)}
+                        icon={RotateCcw}
+                        iconPosition="right"
+                        className="flex-1"
+                      >
+                        إعادة الاختبار
+                      </AnimatedButton>
+                    </div>
+
+                    {/* Expanded Details */}
+                    {expandedAttempt === attempt.id && (
+                      <DetailedAttemptReview attemptId={attempt.id} />
+                    )}
                   </div>
                 </div>
               </MobileCard>
@@ -236,6 +358,34 @@ const Results = () => {
             ابدأ امتحاناً جديداً
           </Button>
         </div>
+      </div>
+
+      {/* Exam Retake Modal */}
+      {selectedExamForRetake && (
+        <ExamModal
+          examId={selectedExamForRetake}
+          isOpen={true}
+          onClose={() => setSelectedExamForRetake(null)}
+        />
+      )}
+    </div>
+  );
+};
+
+// Component for detailed attempt review
+const DetailedAttemptReview = ({ attemptId }: { attemptId: string }) => {
+  return (
+    <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+      <h5 className="font-semibold mb-3">تفاصيل الإجابات:</h5>
+      <div className="text-sm text-gray-600">
+        <p>سيتم تطوير مراجعة مفصلة للإجابات قريباً...</p>
+        <p className="mt-2">ستتضمن:</p>
+        <ul className="list-disc list-inside mt-1 space-y-1">
+          <li>عرض جميع الأسئلة مع الإجابات المختارة</li>
+          <li>توضيح الإجابات الصحيحة والخاطئة</li>
+          <li>شرح مفصل لكل إجابة</li>
+          <li>نصائح للتحسين</li>
+        </ul>
       </div>
     </div>
   );
