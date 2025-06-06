@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useUserAttempts } from "@/hooks/useUserAttempts";
 import { useExamQuestions } from "@/hooks/useExams";
@@ -27,6 +26,7 @@ import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import ExamModal from "@/components/ExamModal";
+import { DetailedAnswerReview } from "@/components/DetailedAnswerReview";
 
 const Results = () => {
   const navigate = useNavigate();
@@ -65,11 +65,11 @@ const Results = () => {
     return "text-red-600";
   };
 
-  const getScoreBadgeVariant = (score: number): "default" | "secondary" | "destructive" | "outline" => {
-    if (score >= 85) return "default";
+  const getScoreBadgeVariant = (score: number): "primary" | "secondary" | "outline" | "ghost" => {
+    if (score >= 85) return "primary";
     if (score >= 70) return "secondary";
     if (score >= 50) return "outline";
-    return "destructive";
+    return "ghost";
   };
 
   const getPerformanceCategory = (score: number) => {
@@ -332,7 +332,7 @@ const Results = () => {
 
                     {/* Expanded Details */}
                     {expandedAttempt === attempt.id && (
-                      <DetailedAttemptReview attemptId={attempt.id} />
+                      <DetailedAnswerReview attemptId={attempt.id} />
                     )}
                   </div>
                 </div>
@@ -368,25 +368,6 @@ const Results = () => {
           onClose={() => setSelectedExamForRetake(null)}
         />
       )}
-    </div>
-  );
-};
-
-// Component for detailed attempt review
-const DetailedAttemptReview = ({ attemptId }: { attemptId: string }) => {
-  return (
-    <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-      <h5 className="font-semibold mb-3">تفاصيل الإجابات:</h5>
-      <div className="text-sm text-gray-600">
-        <p>سيتم تطوير مراجعة مفصلة للإجابات قريباً...</p>
-        <p className="mt-2">ستتضمن:</p>
-        <ul className="list-disc list-inside mt-1 space-y-1">
-          <li>عرض جميع الأسئلة مع الإجابات المختارة</li>
-          <li>توضيح الإجابات الصحيحة والخاطئة</li>
-          <li>شرح مفصل لكل إجابة</li>
-          <li>نصائح للتحسين</li>
-        </ul>
-      </div>
     </div>
   );
 };
