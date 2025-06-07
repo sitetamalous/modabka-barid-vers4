@@ -44,32 +44,29 @@ export const HeroSection = ({ onLogin, onRegister }: HeroSectionProps) => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:justify-center items-center w-full max-w-md mx-auto mb-12">
-            <div className="w-full">
-              <AnimatedButton 
-                size="lg" 
-                onClick={onRegister}
-                icon={PlayCircle}
-                iconPosition="right"
-                className="w-full text-sm sm:text-lg px-4 py-3 sm:px-8 sm:py-5 rounded-xl shadow-2xl"
-              >
-                ابدأ التحضير الآن
-              </AnimatedButton>
-            </div>
+<div className="flex flex-col sm:flex-row sm:justify-center items-center gap-4 w-full max-w-md mx-auto mb-12">
+  <AnimatedButton 
+    size="lg" 
+    onClick={onRegister}
+    icon={PlayCircle}
+    iconPosition="right"
+    className="w-full sm:w-auto text-sm sm:text-lg px-4 py-3 sm:px-6 sm:py-4 rounded-xl shadow-2xl"
+  >
+    ابدأ التحضير الآن
+  </AnimatedButton>
 
-            <div className="w-full">
-              <AnimatedButton 
-                variant="outline" 
-                size="lg"
-                onClick={onLogin}
-                icon={ArrowLeft}
-                iconPosition="right"
-                className="w-full text-sm sm:text-lg px-4 py-3 sm:px-6 sm:py-4 rounded-xl border-2 text-center leading-snug break-words max-w-full sm:max-w-xs"
-              >
-                لديك حساب؟ سجل دخولك
-              </AnimatedButton>
-            </div>
-          </div>
+  <AnimatedButton 
+    variant="outline" 
+    size="lg"
+    onClick={onLogin}
+    icon={ArrowLeft}
+    iconPosition="right"
+    className="w-full sm:w-auto text-sm sm:text-lg px-4 py-3 sm:px-6 sm:py-4 rounded-xl border-2 text-center leading-snug break-words"
+  >
+    لديك حساب؟ سجل دخولك
+  </AnimatedButton>
+</div>
+
 
           {/* Feature Highlights */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
