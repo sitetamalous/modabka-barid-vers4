@@ -40,7 +40,7 @@ export const AnimatedButton = ({
   const sizes = {
     sm: "px-4 py-3 text-sm min-h-[44px]",
     md: "px-6 py-4 text-sm md:text-base min-h-[50px]",
-    lg: "px-6 py-5 text-sm md:text-lg min-h-[60px]" // تم زيادة المسافات
+    lg: "px-6 py-5 text-sm md:text-lg min-h-[60px]"
   };
 
   return (
@@ -50,20 +50,19 @@ export const AnimatedButton = ({
       type={type}
       className={cn(
         "transform transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] rounded-2xl font-bold",
-        "flex items-center justify-center gap-2 leading-tight text-center",
+        "flex items-center justify-center gap-2 text-center",
         "focus:ring-4 focus:ring-emerald-200 focus:outline-none",
-        "text-center break-words whitespace-normal",
         "w-full sm:w-auto",
         variants[variant],
         sizes[size],
         className
       )}
     >
-      <div className="flex items-center justify-center gap-2 flex-nowrap overflow-hidden whitespace-normal text-center leading-snug w-full">
+      <div className="flex items-center justify-center gap-2 w-full overflow-hidden text-sm sm:text-base leading-snug text-center break-words whitespace-normal px-2">
         {Icon && iconPosition === "left" && (
           <Icon className="w-4 h-4 flex-shrink-0" />
         )}
-        <span className="px-2 py-1 break-words text-center text-sm sm:text-base block w-full">
+        <span className="w-full break-words whitespace-normal text-center">
           {children}
         </span>
         {Icon && iconPosition === "right" && (
