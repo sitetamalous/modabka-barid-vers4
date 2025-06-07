@@ -1,4 +1,3 @@
-
 import { AnimatedButton } from "@/components/ui/animated-button";
 import { GradientCard } from "@/components/ui/gradient-card";
 import { ArrowLeft, PlayCircle } from "lucide-react";
@@ -45,35 +44,32 @@ export const HeroSection = ({ onLogin, onRegister }: HeroSectionProps) => {
           </div>
 
           {/* Action Buttons */}
-   <div className="flex flex-col gap-4 sm:flex-row sm:justify-center items-center w-full max-w-md mx-auto mb-12">
-  <div className="w-full">
-    <AnimatedButton 
-      size="lg" 
-      onClick={onRegister}
-      icon={PlayCircle}
-      iconPosition="right"
-      className="w-full text-sm sm:text-lg px-4 py-3 sm:px-8 sm:py-5 rounded-xl shadow-2xl"
-    >
-      ابدأ التحضير الآن
-    </AnimatedButton>
-  </div>
+          <div className="flex flex-col gap-4 sm:flex-row sm:justify-center items-center w-full max-w-md mx-auto mb-12">
+            <div className="w-full">
+              <AnimatedButton 
+                size="lg" 
+                onClick={onRegister}
+                icon={PlayCircle}
+                iconPosition="right"
+                className="w-full text-sm sm:text-lg px-4 py-3 sm:px-8 sm:py-5 rounded-xl shadow-2xl"
+              >
+                ابدأ التحضير الآن
+              </AnimatedButton>
+            </div>
 
-  <div className="w-full">
-    <AnimatedButton 
-      variant="outline" 
-      size="lg"
-      onClick={onLogin}
-      icon={ArrowLeft}
-      iconPosition="right"
-    className="w-full text-sm sm:text-lg px-4 py-3 sm:px-8 sm:py-5 rounded-xl shadow-2xl"
-    >
-      لديك حساب؟ سجل دخولك
-    </AnimatedButton>
-  </div>
-</div>
-
-
-
+            <div className="w-full">
+              <AnimatedButton 
+                variant="outline" 
+                size="lg"
+                onClick={onLogin}
+                icon={ArrowLeft}
+                iconPosition="right"
+                className="w-full text-sm sm:text-lg px-4 py-3 sm:px-6 sm:py-4 rounded-xl border-2 text-center leading-snug break-words max-w-full sm:max-w-xs"
+              >
+                لديك حساب؟ سجل دخولك
+              </AnimatedButton>
+            </div>
+          </div>
 
           {/* Feature Highlights */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
@@ -81,12 +77,12 @@ export const HeroSection = ({ onLogin, onRegister }: HeroSectionProps) => {
               <div className="text-4xl font-bold mb-2">10</div>
               <div className="text-lg opacity-90">امتحانات تجريبية</div>
             </GradientCard>
-            
+
             <GradientCard variant="secondary" className="p-6 text-center">
               <div className="text-4xl font-bold mb-2">500+</div>
               <div className="text-lg opacity-90">سؤال متنوع</div>
             </GradientCard>
-            
+
             <GradientCard variant="accent" className="p-6 text-center">
               <div className="text-4xl font-bold mb-2">95%</div>
               <div className="text-lg opacity-90">معدل النجاح</div>
