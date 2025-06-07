@@ -45,13 +45,13 @@ export const HeroSection = ({ onLogin, onRegister }: HeroSectionProps) => {
           </div>
 
           {/* Action Buttons */}
-         <div className="flex flex-col w-full sm:flex-row sm:justify-center sm:items-center gap-4 sm:gap-6 mb-12">
+      <div className="flex flex-col gap-4 sm:flex-row sm:justify-center sm:items-center mb-12 w-full px-4">
   <AnimatedButton 
     size="lg" 
     onClick={onRegister}
     icon={PlayCircle}
     iconPosition="right"
-    className="text-xl px-8 py-5 w-full sm:w-auto rounded-2xl shadow-2xl"
+    className="text-base sm:text-xl w-full sm:w-auto px-6 py-4 sm:px-10 sm:py-6 rounded-xl shadow-2xl whitespace-nowrap"
   >
     ابدأ التحضير الآن
   </AnimatedButton>
@@ -62,7 +62,7 @@ export const HeroSection = ({ onLogin, onRegister }: HeroSectionProps) => {
     onClick={onLogin}
     icon={ArrowLeft}
     iconPosition="right"
-    className="text-xl px-8 py-5 w-full sm:w-auto rounded-2xl border-2"
+    className="text-base sm:text-xl w-full sm:w-auto px-6 py-4 sm:px-10 sm:py-6 rounded-xl border-2 whitespace-nowrap"
   >
     لديك حساب؟ سجل دخولك
   </AnimatedButton>
