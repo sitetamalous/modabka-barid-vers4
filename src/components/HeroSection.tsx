@@ -55,16 +55,18 @@ export const HeroSection = ({ onLogin, onRegister }: HeroSectionProps) => {
               ابدأ التحضير الآن
             </AnimatedButton>
 
-           <AnimatedButton 
+      <AnimatedButton 
   variant="outline" 
   size="lg"
   onClick={onLogin}
   icon={ArrowLeft}
   iconPosition="right"
-  className="w-full sm:w-auto text-sm sm:text-lg px-4 py-3 sm:px-6 sm:py-4 rounded-xl border-2 text-center leading-relaxed whitespace-nowrap truncate"
+  className="w-full text-sm sm:text-lg px-4 py-3 sm:px-6 sm:py-4 rounded-xl border-2 text-center leading-snug"
 >
-  لديك حساب؟ سجل دخولك
+  <span className="block">لديك حساب؟</span>
+  <span className="block">سجل دخولك</span>
 </AnimatedButton>
+
 
           </div>
 
