@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useUserAttempts } from "@/hooks/useUserAttempts";
 import { useExamQuestions } from "@/hooks/useExams";
@@ -334,7 +333,7 @@ const Results = () => {
                       </AnimatedButton>
                       
                       <AnimatedButton
-                        variant="default"
+                        variant="primary"
                         size="sm"
                         onClick={() => handleRetakeExam(attempt.exam_id)}
                         icon={RotateCcw}
