@@ -56,18 +56,12 @@ return (
       className
     )}
   >
-    {/* لا حاجة لdiv داخلي */}
-    {Icon && iconPosition === "left" && (
-      <Icon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
-    )}
+    <div className="flex items-center justify-center gap-2 flex-nowrap text-sm sm:text-base overflow-hidden whitespace-normal text-center leading-snug">
+  {Icon && iconPosition === "left" && <Icon className="w-4 h-4 flex-shrink-0" />}
+  <span className="break-words text-center">{children}</span>
+  {Icon && iconPosition === "right" && <Icon className="w-4 h-4 flex-shrink-0" />}
+</div>
 
-    <span className="font-bold leading-tight text-center break-words whitespace-normal block">
-      {children}
-    </span>
-
-    {Icon && iconPosition === "right" && (
-      <Icon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
-    )}
   </Button>
 );
 
