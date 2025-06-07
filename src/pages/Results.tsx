@@ -84,12 +84,16 @@ const Results = () => {
   // Handle review exam - show detailed answers (no new attempt)
   const handleReviewExam = (attemptId: string) => {
     console.log('Review exam clicked for attempt:', attemptId);
+    // Simply toggle the expanded state - no modal opening
     setExpandedAttempt(expandedAttempt === attemptId ? null : attemptId);
   };
 
   // Handle retake exam - start new attempt
   const handleRetakeExam = (examId: string) => {
     console.log('Retake exam clicked for exam:', examId);
+    // Close any expanded attempt details first
+    setExpandedAttempt(null);
+    // Open the exam modal for a new attempt
     setSelectedExamForRetake(examId);
   };
 
@@ -330,7 +334,7 @@ const Results = () => {
                       </AnimatedButton>
                       
                       <AnimatedButton
-                        variant="primary"
+                        variant="default"
                         size="sm"
                         onClick={() => handleRetakeExam(attempt.exam_id)}
                         icon={RotateCcw}
@@ -373,7 +377,7 @@ const Results = () => {
         </div>
       </div>
 
-      {/* Exam Retake Modal - This opens when "إعادة الاختبار" is clicked */}
+      {/* Exam Retake Modal - This opens ONLY when "إعادة الاختبار" is clicked */}
       {selectedExamForRetake && (
         <ExamModal
           examId={selectedExamForRetake}
