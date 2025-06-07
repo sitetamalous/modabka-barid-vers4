@@ -40,26 +40,34 @@ export const AnimatedButton = ({
     lg: "px-6 py-4 text-sm md:text-lg min-h-[56px]"
   };
 
- return (
+return (
   <Button
     onClick={onClick}
     disabled={disabled}
     type={type}
     className={cn(
       "transform transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] rounded-2xl font-bold",
-      "flex flex-wrap items-center justify-center gap-2 leading-tight text-center",
+      "flex items-center justify-center gap-2 leading-tight text-center",
       "focus:ring-4 focus:ring-emerald-200 focus:outline-none",
-      "break-words hyphens-auto whitespace-normal", // هذا هو المفتاح
+      "text-center break-words whitespace-normal", // التفاف الكلمات
+      "w-full sm:w-auto", // جعل الزر يأخذ العرض كاملاً في الهاتف، ويفتح على حسب المحتوى في الشاشات الأكبر
       variants[variant],
       sizes[size],
       className
     )}
   >
-    {Icon && iconPosition === "left" && <Icon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />}
+    {/* لا حاجة لdiv داخلي */}
+    {Icon && iconPosition === "left" && (
+      <Icon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+    )}
+
     <span className="font-bold leading-tight text-center break-words whitespace-normal block">
       {children}
     </span>
-    {Icon && iconPosition === "right" && <Icon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />}
+
+    {Icon && iconPosition === "right" && (
+      <Icon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+    )}
   </Button>
 );
 
