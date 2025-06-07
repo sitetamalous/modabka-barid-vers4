@@ -83,11 +83,13 @@ const Results = () => {
 
   // Handle review exam - show detailed answers (no new attempt)
   const handleReviewExam = (attemptId: string) => {
+    console.log('Review exam clicked for attempt:', attemptId);
     setExpandedAttempt(expandedAttempt === attemptId ? null : attemptId);
   };
 
   // Handle retake exam - start new attempt
   const handleRetakeExam = (examId: string) => {
+    console.log('Retake exam clicked for exam:', examId);
     setSelectedExamForRetake(examId);
   };
 
