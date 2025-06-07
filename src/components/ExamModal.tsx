@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, CheckCircle, AlertCircle, ArrowRight, ArrowLeft, Loader2, Trophy, Target } from "lucide-react";
 import { useExamQuestions } from "@/hooks/useExams";
-import { useStartExamAttempt, useSubmitExamAttempt } from "@/hooks/useUserAttempts";
+import { useStartExamAttempt } from "@/hooks/useUserAttempts";
+import { useSubmitExamAttempt } from "@/hooks/useSubmitExamAttempt";
 import { DetailedAnswerReview } from "@/components/DetailedAnswerReview";
 
 interface ExamModalProps {
@@ -24,7 +24,7 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
   const [showResults, setShowResults] = useState(false);
   const [attemptId, setAttemptId] = useState<string | null>(null);
   const [startTime, setStartTime] = useState<Date | null>(null);
-  const [submissionResult, setSubmissionResult] = useState<{ score: number; correctAnswers: number } | null>(null);
+  const [submissionResult, setSubmissionResult] = useState<{ score: number; correctAnswers: number; totalQuestions: number } | null>(null);
 
   const { data: questions, isLoading: questionsLoading } = useExamQuestions(examId);
   const startExamMutation = useStartExamAttempt();
@@ -33,6 +33,7 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
   // Reset all states when modal opens (for retake functionality)
   useEffect(() => {
     if (isOpen) {
+      console.log('🔄 Resetting exam modal state for new attempt');
       setCurrentQuestion(0);
       setAnswers({});
       setTimeLeft(3600);
@@ -46,13 +47,18 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
 
   useEffect(() => {
     if (isOpen && !isSubmitted && !attemptId && questions) {
+      console.log('🚀 Starting new exam attempt with', questions.length, 'questions');
       // Start new exam attempt
       startExamMutation.mutate(
         { examId, totalQuestions: questions.length },
         {
           onSuccess: (data) => {
+            console.log('✅ Exam attempt started successfully:', data.id);
             setAttemptId(data.id);
             setStartTime(new Date());
+          },
+          onError: (error) => {
+            console.error('❌ Failed to start exam attempt:', error);
           }
         }
       );
@@ -61,9 +67,11 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
 
   useEffect(() => {
     if (isOpen && !isSubmitted && startTime) {
+      console.log('⏰ Starting timer for exam');
       const timer = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
+            console.log('⏰ Time is up! Auto-submitting exam');
             handleSubmit();
             return 0;
           }
@@ -76,6 +84,7 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
   }, [isOpen, isSubmitted, startTime]);
 
   const handleAnswerSelect = (questionId: string, optionId: string) => {
+    console.log('📝 Answer selected:', { questionId, optionId });
     setAnswers(prev => ({
       ...prev,
       [questionId]: optionId
@@ -83,15 +92,24 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
   };
 
   const handleSubmit = () => {
-    if (!attemptId || !questions || !startTime) return;
+    if (!attemptId || !questions || !startTime) {
+      console.error('❌ Cannot submit: missing required data', { attemptId, questionsLength: questions?.length, startTime });
+      return;
+    }
+
+    console.log('📤 Submitting exam with', Object.keys(answers).length, 'answers out of', questions.length, 'questions');
 
     const timeTaken = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
     
-    // Prepare answers data
+    // Prepare answers data with correct answers validation
     const answersData = questions.map(question => {
       const selectedOptionId = answers[question.id];
       const selectedOption = question.answer_options.find(opt => opt.id === selectedOptionId);
       const isCorrect = selectedOption?.is_correct || false;
+      
+      console.log('Question:', question.question_text.substring(0, 50), '...', 
+                  'Selected:', selectedOption?.option_text || 'No answer',
+                  'Correct:', isCorrect);
       
       return {
         questionId: question.id,
@@ -100,13 +118,25 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
       };
     });
 
+    const correctCount = answersData.filter(a => a.isCorrect).length;
+    console.log('📊 Submission summary:', {
+      totalQuestions: questions.length,
+      answeredQuestions: Object.keys(answers).length,
+      correctAnswers: correctCount,
+      timeTaken: `${Math.floor(timeTaken / 60)}:${(timeTaken % 60).toString().padStart(2, '0')}`
+    });
+
     submitExamMutation.mutate(
       { attemptId, answers: answersData, timeTaken },
       {
         onSuccess: (result) => {
+          console.log('🎉 Exam submitted successfully:', result);
           setIsSubmitted(true);
           setShowResults(true);
           setSubmissionResult(result);
+        },
+        onError: (error) => {
+          console.error('💥 Exam submission failed:', error);
         }
       }
     );
@@ -150,6 +180,10 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
     setStartTime(null);
     setSubmissionResult(null);
   };
+
+  const answeredCount = Object.keys(answers).length;
+  const totalQuestions = questions?.length || 0;
+  const progressPercentage = totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
 
   if (questionsLoading || startExamMutation.isPending) {
     return (
@@ -283,7 +317,18 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
               السؤال {currentQuestion + 1} من {questions.length}
             </div>
           </div>
-          <Progress value={((currentQuestion + 1) / questions.length) * 100} className="mt-2" />
+          <div className="space-y-2">
+            <Progress value={((currentQuestion + 1) / questions.length) * 100} className="mt-2" />
+            <div className="flex justify-between text-xs text-gray-600">
+              <span>التقدم في الأسئلة</span>
+              <span>{currentQuestion + 1}/{questions.length}</span>
+            </div>
+            <Progress value={progressPercentage} className="h-2" />
+            <div className="flex justify-between text-xs text-gray-600">
+              <span>الأسئلة المجاب عليها</span>
+              <span>{answeredCount}/{totalQuestions}</span>
+            </div>
+          </div>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -311,6 +356,16 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
                   </button>
                 ))}
               </div>
+
+              {/* Show if question is answered */}
+              {answers[questions[currentQuestion].id] && (
+                <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                  <div className="flex items-center gap-2 text-green-700">
+                    <CheckCircle className="w-4 h-4" />
+                    <span className="text-sm font-medium">تم الإجابة على هذا السؤال</span>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -342,7 +397,7 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
                 <Button
                   onClick={handleSubmit}
                   className="bg-gradient-to-r from-emerald-500 to-blue-600"
-                  disabled={Object.keys(answers).length === 0 || submitExamMutation.isPending}
+                  disabled={submitExamMutation.isPending}
                 >
                   {submitExamMutation.isPending ? (
                     <>
@@ -385,11 +440,11 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
                 </div>
                 <div className="flex items-center gap-1">
                   <div className="w-4 h-4 bg-blue-100 border border-blue-300 rounded"></div>
-                  <span>تم الإجابة</span>
+                  <span>تم الإجابة ({answeredCount})</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <div className="w-4 h-4 bg-white border border-gray-300 rounded"></div>
-                  <span>لم تتم الإجابة</span>
+                  <span>لم تتم الإجابة ({totalQuestions - answeredCount})</span>
                 </div>
               </div>
             </CardContent>

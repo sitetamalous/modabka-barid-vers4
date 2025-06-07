@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { GradientCard } from "@/components/ui/gradient-card";
@@ -6,6 +5,8 @@ import { AnimatedButton } from "@/components/ui/animated-button";
 import { StatsOverview } from "@/components/StatsOverview";
 import { ExamCard } from "@/components/ExamCard";
 import { StudyTips } from "@/components/StudyTips";
+import { ProfileView } from "@/components/ProfileView";
+import { StatsDetailedView } from "@/components/StatsDetailedView";
 import { BottomNavigation } from "@/components/ui/bottom-navigation";
 import { MobileHeader } from "@/components/ui/mobile-header";
 import { MobileCard } from "@/components/ui/mobile-card";
@@ -176,26 +177,7 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
       case 'stats':
         return (
           <div className="space-y-6 px-4 md:px-0">
-            <StatsOverview
-              totalExams={exams?.length || 0}
-              completedExams={completedAttempts.length}
-              averageScore={averageScore}
-              totalQuestions={totalQuestions}
-            />
-            
-            <MobileCard>
-              <div className="p-6 text-center">
-                <TrendingUp className="w-12 h-12 text-emerald-600 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-gray-900 mb-2">تفاصيل أكثر</h3>
-                <p className="text-gray-600 mb-4">اطلع على تحليل مفصل لأدائك في جميع الامتحانات</p>
-                <AnimatedButton 
-                  onClick={() => navigate('/results')}
-                  className="w-full"
-                >
-                  عرض النتائج التفصيلية
-                </AnimatedButton>
-              </div>
-            </MobileCard>
+            <StatsDetailedView />
           </div>
         );
 
@@ -220,57 +202,8 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
 
       case 'profile':
         return (
-          <div className="space-y-6 px-4 md:px-0">
-            <MobileCard>
-              <div className="text-center p-6">
-                <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <User className="w-10 h-10 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">ملفك الشخصي</h3>
-                <p className="text-gray-600">مرحباً بك في منصة التحضير لامتحان بريد الجزائر</p>
-              </div>
-            </MobileCard>
-            
-            <MobileCard>
-              <div className="p-6 space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">الامتحانات المكتملة</span>
-                  <span className="font-semibold text-emerald-600">{completedAttempts.length}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">المعدل العام</span>
-                  <span className="font-semibold text-blue-600">{averageScore.toFixed(1)}%</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">إجمالي الأسئلة المتاحة</span>
-                  <span className="font-semibold text-purple-600">{totalQuestions}</span>
-                </div>
-              </div>
-            </MobileCard>
-
-            <MobileCard>
-              <div className="p-6 space-y-3">
-                <AnimatedButton
-                  variant="outline"
-                  onClick={() => navigate('/results')}
-                  icon={BarChart3}
-                  iconPosition="right"
-                  className="w-full justify-center"
-                >
-                  عرض النتائج التفصيلية
-                </AnimatedButton>
-                
-                <AnimatedButton
-                  variant="outline"
-                  onClick={onLogout}
-                  icon={LogOut}
-                  iconPosition="right"
-                  className="w-full justify-center"
-                >
-                  تسجيل الخروج
-                </AnimatedButton>
-              </div>
-            </MobileCard>
+          <div className="px-4 md:px-0">
+            <ProfileView />
           </div>
         );
 

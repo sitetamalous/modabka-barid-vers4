@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useUserAttempts } from "@/hooks/useUserAttempts";
 import { useExamQuestions } from "@/hooks/useExams";
@@ -8,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { AnimatedButton } from "@/components/ui/animated-button";
+import { StatsDetailedView } from "@/components/StatsDetailedView";
 import { 
   Trophy, 
   Calendar, 
@@ -21,7 +21,8 @@ import {
   Eye,
   RotateCcw,
   Award,
-  TrendingDown
+  TrendingDown,
+  Filter
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -35,6 +36,7 @@ const Results = () => {
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'completed' | 'high-score'>('all');
   const [selectedExamForRetake, setSelectedExamForRetake] = useState<string | null>(null);
   const [expandedAttempt, setExpandedAttempt] = useState<string | null>(null);
+  const [showDetailedStats, setShowDetailedStats] = useState(false);
 
   const completedAttempts = userAttempts?.filter(attempt => attempt.is_completed) || [];
   
@@ -124,6 +126,22 @@ const Results = () => {
             <BarChart3 className="w-12 h-12 text-emerald-600 mx-auto mb-4 animate-pulse" />
             <p className="text-gray-600">جاري تحميل النتائج...</p>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (showDetailedStats) {
+    return (
+      <div className="min-h-dvh bg-gradient-to-br from-emerald-50 via-white to-blue-50" dir="rtl">
+        <MobileHeader 
+          title="الإحصائيات المفصلة"
+          subtitle="تحليل شامل ومفصل لأدائك"
+          showBackButton
+          onBack={() => setShowDetailedStats(false)}
+        />
+        <div className="container mx-auto px-4 py-6">
+          <StatsDetailedView />
         </div>
       </div>
     );
@@ -229,6 +247,25 @@ const Results = () => {
                 </div>
               )}
             </div>
+          </div>
+        </MobileCard>
+
+        {/* New Detailed Stats Button */}
+        <MobileCard>
+          <div className="p-4 text-center">
+            <BarChart3 className="w-8 h-8 text-blue-600 mx-auto mb-3" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">تحليل مفصل للأداء</h3>
+            <p className="text-gray-600 mb-4 text-sm">
+              اطلع على إحصائيات متقدمة وتوزيع النتائج وتوصيات للتحسين
+            </p>
+            <AnimatedButton 
+              onClick={() => setShowDetailedStats(true)}
+              className="w-full"
+              icon={TrendingUp}
+              iconPosition="right"
+            >
+              عرض الإحصائيات المفصلة
+            </AnimatedButton>
           </div>
         </MobileCard>
 
