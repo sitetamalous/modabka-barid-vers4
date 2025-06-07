@@ -45,30 +45,28 @@ export const HeroSection = ({ onLogin, onRegister }: HeroSectionProps) => {
           </div>
 
           {/* Action Buttons */}
-<div className="flex flex-col sm:flex-row gap-4 justify-center items-stretch sm:items-center w-full max-w-md mx-auto px-4">
-  <AnimatedButton 
-    size="lg" 
-    onClick={onRegister}
-    icon={PlayCircle}
-    iconPosition="right"
-    className="text-base sm:text-lg px-6 py-4 w-full sm:w-auto"
-  >
-    ابدأ التحضير الآن
-  </AnimatedButton>
-  
-  <AnimatedButton 
-    variant="outline" 
-    size="lg"
-    onClick={onLogin}
-    icon={ArrowLeft}
-    iconPosition="right"
-    className="text-base sm:text-lg px-6 py-4 w-full sm:w-auto"
-  >
-    لديك حساب؟ سجل دخولك
-  </AnimatedButton>
-</div>
-
-
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12">
+            <AnimatedButton 
+              size="lg" 
+              onClick={onRegister}
+              icon={PlayCircle}
+              iconPosition="right"
+              className="text-xl px-10 py-6 rounded-2xl shadow-2xl"
+            >
+              ابدأ التحضير الآن
+            </AnimatedButton>
+            
+            <AnimatedButton 
+              variant="outline" 
+              size="lg"
+              onClick={onLogin}
+              icon={ArrowLeft}
+              iconPosition="right"
+              className="text-xl px-10 py-6 rounded-2xl border-2"
+            >
+              لديك حساب؟ سجل دخولك
+            </AnimatedButton>
+          </div>
 
           {/* Feature Highlights */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
