@@ -43,31 +43,29 @@ export const HeroSection = ({ onLogin, onRegister }: HeroSectionProps) => {
             </p>
           </div>
 
-    {/* Action Buttons */}
-<div className="flex flex-col sm:flex-row sm:justify-center items-center gap-4 w-full max-w-md mx-auto mb-12">
-  {/* زر التسجيل */}
-  <AnimatedButton 
-    size="lg" 
-    onClick={onRegister}
-    icon={PlayCircle}
-    iconPosition="right"
-    className="w-full sm:w-auto text-sm sm:text-lg px-4 py-3 sm:px-6 sm:py-4 rounded-xl shadow-2xl whitespace-nowrap"
-  >
-    ابدأ التحضير الآن
-  </AnimatedButton>
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row sm:justify-center items-center gap-4 w-full max-w-md mx-auto mb-12">
+            <AnimatedButton 
+              size="lg" 
+              onClick={onRegister}
+              icon={PlayCircle}
+              iconPosition="right"
+              className="w-full sm:w-auto text-sm sm:text-lg px-4 py-3 sm:px-6 sm:py-4 rounded-xl shadow-2xl whitespace-nowrap"
+            >
+              ابدأ التحضير الآن
+            </AnimatedButton>
 
-  {/* زر تسجيل الدخول */}
-  <AnimatedButton 
-    variant="outline" 
-    size="lg"
-    onClick={onLogin}
-    icon={ArrowLeft}
-    iconPosition="right"
-    className="w-full sm:w-auto text-sm sm:text-lg px-4 py-3 sm:px-6 sm:py-4 rounded-xl border-2 text-center leading-relaxed break-words whitespace-pre-line"
-  >
-    لديك حساب؟\nسجل دخولك
-  </AnimatedButton>
-</div>
+            <AnimatedButton 
+              variant="outline" 
+              size="lg"
+              onClick={onLogin}
+              icon={ArrowLeft}
+              iconPosition="right"
+              className="w-full sm:w-auto text-sm sm:text-lg px-4 py-3 sm:px-6 sm:py-4 rounded-xl border-2 text-center leading-relaxed break-words whitespace-pre-line"
+            >
+              لديك حساب؟{'\n'}سجل دخولك
+            </AnimatedButton>
+          </div>
 
           {/* Feature Highlights */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
