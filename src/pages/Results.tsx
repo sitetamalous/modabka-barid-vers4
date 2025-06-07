@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useUserAttempts } from "@/hooks/useUserAttempts";
 import { useExamQuestions } from "@/hooks/useExams";
@@ -82,14 +83,27 @@ const Results = () => {
 
   // Handle review exam - show detailed answers (no new attempt)
   const handleReviewExam = (attemptId: string) => {
-    console.log('Review exam clicked for attempt:', attemptId);
-    // Simply toggle the expanded state - no modal opening
-    setExpandedAttempt(expandedAttempt === attemptId ? null : attemptId);
+    console.log('🔍 Review exam clicked for attempt:', attemptId);
+    console.log('🔍 Current expandedAttempt:', expandedAttempt);
+    
+    // Close any exam modal that might be open
+    setSelectedExamForRetake(null);
+    
+    // Toggle the expanded state for this specific attempt
+    if (expandedAttempt === attemptId) {
+      console.log('🔍 Closing expanded attempt details');
+      setExpandedAttempt(null);
+    } else {
+      console.log('🔍 Opening expanded attempt details for:', attemptId);
+      setExpandedAttempt(attemptId);
+    }
   };
 
   // Handle retake exam - start new attempt
   const handleRetakeExam = (examId: string) => {
-    console.log('Retake exam clicked for exam:', examId);
+    console.log('🔄 Retake exam clicked for exam:', examId);
+    console.log('🔄 Closing any expanded attempt details');
+    
     // Close any expanded attempt details first
     setExpandedAttempt(null);
     // Open the exam modal for a new attempt
@@ -321,32 +335,34 @@ const Results = () => {
 
                     {/* Action Buttons */}
                     <div className="flex gap-2 pt-2">
-                      <AnimatedButton
+                      <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleReviewExam(attempt.id)}
-                        icon={Eye}
-                        iconPosition="right"
                         className="flex-1"
                       >
+                        <Eye className="w-4 h-4 ml-2" />
                         {expandedAttempt === attempt.id ? 'إخفاء التفاصيل' : 'مراجعة الإجابات'}
-                      </AnimatedButton>
+                      </Button>
                       
-                      <AnimatedButton
-                        variant="primary"
+                      <Button
+                        variant="default"
                         size="sm"
                         onClick={() => handleRetakeExam(attempt.exam_id)}
-                        icon={RotateCcw}
-                        iconPosition="right"
                         className="flex-1"
                       >
+                        <RotateCcw className="w-4 h-4 ml-2" />
                         إعادة الاختبار
-                      </AnimatedButton>
+                      </Button>
                     </div>
 
                     {/* Expanded Details - Shows detailed review when "مراجعة الإجابات" is clicked */}
                     {expandedAttempt === attempt.id && (
                       <div className="mt-4 border-t pt-4">
+                        <h5 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                          <Eye className="w-5 h-5 text-blue-600" />
+                          مراجعة تفصيلية للإجابات
+                        </h5>
                         <DetailedAnswerReview attemptId={attempt.id} />
                       </div>
                     )}
