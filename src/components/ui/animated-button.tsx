@@ -1,4 +1,3 @@
-
 import { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -40,29 +39,29 @@ export const AnimatedButton = ({
     lg: "px-6 py-4 text-sm md:text-lg min-h-[56px]"
   };
 
-return (
-  <Button
-    onClick={onClick}
-    disabled={disabled}
-    type={type}
-    className={cn(
-      "transform transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] rounded-2xl font-bold",
-      "flex items-center justify-center gap-2 leading-tight text-center",
-      "focus:ring-4 focus:ring-emerald-200 focus:outline-none",
-      "text-center break-words whitespace-normal", // التفاف الكلمات
-      "w-full sm:w-auto", // جعل الزر يأخذ العرض كاملاً في الهاتف، ويفتح على حسب المحتوى في الشاشات الأكبر
-      variants[variant],
-      sizes[size],
-      className
-    )}
-  >
-    <div className="flex items-center justify-center gap-2 flex-nowrap text-sm sm:text-base overflow-hidden whitespace-normal text-center leading-snug">
-  {Icon && iconPosition === "left" && <Icon className="w-4 h-4 flex-shrink-0" />}
-  <span className="break-words text-center">{children}</span>
-  {Icon && iconPosition === "right" && <Icon className="w-4 h-4 flex-shrink-0" />}
-</div>
-
-  </Button>
-);
-
+  return (
+    <Button
+      onClick={onClick}
+      disabled={disabled}
+      type={type}
+      className={cn(
+        "transform transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] rounded-2xl font-bold",
+        "flex items-center justify-center gap-2 leading-tight text-center",
+        "focus:ring-4 focus:ring-emerald-200 focus:outline-none",
+        "text-center break-words whitespace-normal",
+        "w-full sm:w-auto",
+        variants[variant],
+        sizes[size],
+        className
+      )}
+    >
+      <div className="flex items-center justify-center gap-2 flex-wrap text-sm sm:text-base overflow-hidden whitespace-normal text-center leading-snug w-full">
+        {Icon && iconPosition === "left" && <Icon className="w-4 h-4 flex-shrink-0" />}
+        <span className="break-words text-center leading-snug text-sm sm:text-base block w-full">
+          {children}
+        </span>
+        {Icon && iconPosition === "right" && <Icon className="w-4 h-4 flex-shrink-0" />}
+      </div>
+    </Button>
+  );
 };
