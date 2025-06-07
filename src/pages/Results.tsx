@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { AnimatedButton } from "@/components/ui/animated-button";
 import { StatsDetailedView } from "@/components/StatsDetailedView";
+import { ResetExamDialog } from "@/components/ui/reset-exam-dialog";
 import { 
   Trophy, 
   Calendar, 
@@ -22,7 +23,9 @@ import {
   RotateCcw,
   Award,
   TrendingDown,
-  Filter
+  Filter,
+  Trash2,
+  AlertTriangle
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -37,6 +40,15 @@ const Results = () => {
   const [selectedExamForRetake, setSelectedExamForRetake] = useState<string | null>(null);
   const [expandedAttempt, setExpandedAttempt] = useState<string | null>(null);
   const [showDetailedStats, setShowDetailedStats] = useState(false);
+  const [resetExamDialog, setResetExamDialog] = useState<{
+    isOpen: boolean;
+    examId: string;
+    examTitle: string;
+  }>({
+    isOpen: false,
+    examId: '',
+    examTitle: ''
+  });
 
   const completedAttempts = userAttempts?.filter(attempt => attempt.is_completed) || [];
   
@@ -110,6 +122,25 @@ const Results = () => {
     setExpandedAttempt(null);
     // Open the exam modal for a new attempt
     setSelectedExamForRetake(examId);
+  };
+
+  // Handle complete reset - delete all previous attempts
+  const handleCompleteReset = (examId: string, examTitle: string) => {
+    console.log('🗑️ Complete reset requested for exam:', examId);
+    setExpandedAttempt(null);
+    setSelectedExamForRetake(null);
+    setResetExamDialog({
+      isOpen: true,
+      examId,
+      examTitle
+    });
+  };
+
+  const handleResetComplete = () => {
+    // After reset, optionally start a new exam immediately
+    if (resetExamDialog.examId) {
+      setSelectedExamForRetake(resetExamDialog.examId);
+    }
   };
 
   if (isLoading) {
@@ -370,27 +401,51 @@ const Results = () => {
                       </div>
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex gap-2 pt-2">
+                    {/* Enhanced Action Buttons */}
+                    <div className="grid grid-cols-3 gap-2 pt-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleReviewExam(attempt.id)}
-                        className="flex-1"
+                        className="text-xs"
                       >
-                        <Eye className="w-4 h-4 ml-2" />
-                        {expandedAttempt === attempt.id ? 'إخفاء التفاصيل' : 'مراجعة الإجابات'}
+                        <Eye className="w-3 h-3 ml-1" />
+                        {expandedAttempt === attempt.id ? 'إخفاء' : 'مراجعة'}
                       </Button>
                       
                       <Button
                         variant="default"
                         size="sm"
                         onClick={() => handleRetakeExam(attempt.exam_id)}
-                        className="flex-1"
+                        className="text-xs"
                       >
-                        <RotateCcw className="w-4 h-4 ml-2" />
-                        إعادة الاختبار
+                        <RotateCcw className="w-3 h-3 ml-1" />
+                        إعادة اختبار
                       </Button>
+
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleCompleteReset(attempt.exam_id, attempt.exams?.title || 'امتحان')}
+                        className="text-xs"
+                      >
+                        <Trash2 className="w-3 h-3 ml-1" />
+                        مسح وإعادة
+                      </Button>
+                    </div>
+
+                    {/* Enhanced Information Box */}
+                    <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                        <div className="text-xs text-blue-800">
+                          <div className="font-semibold mb-1">خيارات الإعادة:</div>
+                          <div className="space-y-1">
+                            <div>• <strong>إعادة اختبار:</strong> محاولة جديدة (تحتفظ بالنتائج السابقة)</div>
+                            <div>• <strong>مسح وإعادة:</strong> حذف جميع البيانات السابقة والبدء من الصفر</div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Expanded Details - Shows detailed review when "مراجعة الإجابات" is clicked */}
@@ -437,6 +492,15 @@ const Results = () => {
           onClose={() => setSelectedExamForRetake(null)}
         />
       )}
+
+      {/* Reset Exam Dialog */}
+      <ResetExamDialog
+        examId={resetExamDialog.examId}
+        examTitle={resetExamDialog.examTitle}
+        isOpen={resetExamDialog.isOpen}
+        onClose={() => setResetExamDialog(prev => ({ ...prev, isOpen: false }))}
+        onResetComplete={handleResetComplete}
+      />
     </div>
   );
 };

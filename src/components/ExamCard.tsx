@@ -1,128 +1,209 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AnimatedButton } from "@/components/ui/animated-button";
+import { Progress } from "@/components/ui/progress";
+import { ResetExamDialog } from "@/components/ui/reset-exam-dialog";
 import { 
+  Play, 
   Clock, 
-  Target, 
-  PlayCircle, 
+  Users, 
   CheckCircle, 
-  Star,
-  TrendingUp
+  Target,
+  Trophy,
+  RotateCcw,
+  Trash2,
+  Calendar,
+  MoreVertical
 } from "lucide-react";
+import { format } from "date-fns";
+import { ar } from "date-fns/locale";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ExamCardProps {
   exam: {
     id: string;
     title: string;
-    description: string;
-    duration_minutes: number;
+    description?: string;
     total_questions: number;
+    duration_minutes: number;
   };
   examStatus?: {
-    score: number;
-    is_completed: boolean;
-  };
+    score?: number;
+    completed_at?: string;
+    correct_answers?: number;
+  } | null;
   onStartExam: (examId: string) => void;
 }
 
 export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
-  const [isHovered, setIsHovered] = useState(false);
-  const isCompleted = examStatus?.is_completed;
+  const [resetDialog, setResetDialog] = useState(false);
+  const isCompleted = !!examStatus;
+  const score = examStatus?.score || 0;
+
+  const getScoreColor = (score: number) => {
+    if (score >= 85) return "text-emerald-600";
+    if (score >= 70) return "text-blue-600";
+    if (score >= 50) return "text-yellow-600";
+    return "text-red-600";
+  };
+
+  const getScoreBadgeVariant = (score: number): "secondary" | "destructive" | "outline" => {
+    if (score >= 70) return "secondary";
+    if (score >= 50) return "outline";
+    return "destructive";
+  };
+
+  const handleStartExam = () => {
+    onStartExam(exam.id);
+  };
+
+  const handleRetakeExam = () => {
+    onStartExam(exam.id);
+  };
+
+  const handleCompleteReset = () => {
+    setResetDialog(true);
+  };
+
+  const handleResetComplete = () => {
+    // After reset, start the exam
+    onStartExam(exam.id);
+  };
 
   return (
-    <Card 
-      className="group relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 border-0 shadow-lg"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {/* Background Gradient Overlay */}
-      <div className={`absolute inset-0 bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-      
-      <CardHeader className="relative z-10">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex-1">
-            <CardTitle className="text-xl mb-3 group-hover:text-emerald-600 transition-colors duration-300 leading-tight">
-              {exam.title}
-            </CardTitle>
-            <p className="text-gray-600 text-sm leading-relaxed">
-              {exam.description}
-            </p>
-          </div>
-          
-          {isCompleted && (
-            <div className="flex flex-col items-center gap-2">
-              <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 px-3 py-1">
-                <CheckCircle className="w-4 h-4 mr-1" />
-                مكتمل
-              </Badge>
-              {examStatus && (
-                <div className="flex items-center gap-1 text-emerald-600">
-                  <Star className="w-4 h-4 fill-current" />
-                  <span className="font-bold text-lg">{examStatus.score}%</span>
-                </div>
+    <>
+      <Card className="h-full bg-white shadow-lg hover:shadow-xl transition-all duration-300 border-0 group">
+        <CardHeader className="pb-4">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-emerald-600 transition-colors">
+                {exam.title}
+              </h3>
+              {exam.description && (
+                <p className="text-gray-600 text-sm leading-relaxed line-clamp-2">
+                  {exam.description}
+                </p>
               )}
             </div>
+            
+            {isCompleted && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" dir="rtl">
+                  <DropdownMenuItem onClick={handleRetakeExam}>
+                    <RotateCcw className="w-4 h-4 ml-2" />
+                    إعادة الاختبار
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={handleCompleteReset}
+                    className="text-red-600 focus:text-red-600"
+                  >
+                    <Trash2 className="w-4 h-4 ml-2" />
+                    مسح البيانات وإعادة التشغيل
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
+
+          {isCompleted && (
+            <div className="mt-4 p-4 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg border border-emerald-200">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-5 h-5 text-emerald-600" />
+                  <span className="font-semibold text-emerald-800">مكتمل</span>
+                </div>
+                <Badge variant={getScoreBadgeVariant(score)} className="text-sm font-bold">
+                  {score}%
+                </Badge>
+              </div>
+              
+              <Progress value={score} className="mb-3 h-2" />
+              
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-emerald-600" />
+                  <span className="text-gray-700">
+                    {examStatus.correct_answers}/{exam.total_questions} صحيح
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-blue-600" />
+                  <span className="text-gray-700">
+                    {examStatus.completed_at && format(new Date(examStatus.completed_at), 'dd/MM', { locale: ar })}
+                  </span>
+                </div>
+              </div>
+            </div>
           )}
-        </div>
-      </CardHeader>
-      
-      <CardContent className="relative z-10 space-y-6">
-        {/* Exam Info */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg group-hover:bg-white transition-colors duration-300">
-            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Clock className="w-4 h-4 text-blue-600" />
+        </CardHeader>
+
+        <CardContent className="pb-4">
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="flex items-center gap-2 text-gray-600">
+              <Target className="w-4 h-4" />
+              <span>{exam.total_questions} سؤال</span>
             </div>
-            <div>
-              <p className="text-xs text-gray-500">المدة</p>
-              <p className="font-semibold text-gray-700">{exam.duration_minutes} دقيقة</p>
+            <div className="flex items-center gap-2 text-gray-600">
+              <Clock className="w-4 h-4" />
+              <span>{exam.duration_minutes} دقيقة</span>
             </div>
           </div>
-          
-          <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg group-hover:bg-white transition-colors duration-300">
-            <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
-              <Target className="w-4 h-4 text-emerald-600" />
-            </div>
-            <div>
-              <p className="text-xs text-gray-500">الأسئلة</p>
-              <p className="font-semibold text-gray-700">{exam.total_questions} سؤال</p>
-            </div>
-          </div>
-        </div>
+        </CardContent>
 
-        {/* Progress Bar for Completed Exams */}
-        {isCompleted && examStatus && (
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">النتيجة النهائية</span>
-              <span className="text-sm font-bold text-emerald-600">{examStatus.score}%</span>
+        <CardFooter className="pt-0">
+          {isCompleted ? (
+            <div className="grid grid-cols-2 gap-2 w-full">
+              <Button
+                variant="outline"
+                onClick={handleRetakeExam}
+                className="flex items-center gap-2"
+              >
+                <RotateCcw className="w-4 h-4" />
+                إعادة الاختبار
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleCompleteReset}
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                مسح وإعادة
+              </Button>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-gradient-to-r from-emerald-400 to-blue-500 h-2 rounded-full transition-all duration-1000 ease-out"
-                style={{ width: `${examStatus.score}%` }}
-              />
-            </div>
-          </div>
-        )}
+          ) : (
+            <Button 
+              onClick={handleStartExam}
+              className="w-full bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700"
+            >
+              <Play className="w-4 h-4 ml-2" />
+              بدء الامتحان
+            </Button>
+          )}
+        </CardFooter>
+      </Card>
 
-        {/* Action Button */}
-        <AnimatedButton
-          onClick={() => onStartExam(exam.id)}
-          variant={isCompleted ? "outline" : "primary"}
-          size="md"
-          icon={isCompleted ? TrendingUp : PlayCircle}
-          iconPosition="right"
-          className="w-full"
-        >
-          {isCompleted ? 'مراجعة الامتحان' : 'بدء الامتحان'}
-        </AnimatedButton>
-      </CardContent>
-
-      {/* Hover Effect Border */}
-      <div className={`absolute inset-0 border-2 border-emerald-300 rounded-lg opacity-0 ${isHovered ? 'opacity-100' : ''} transition-opacity duration-300 pointer-events-none`} />
-    </Card>
+      <ResetExamDialog
+        examId={exam.id}
+        examTitle={exam.title}
+        isOpen={resetDialog}
+        onClose={() => setResetDialog(false)}
+        onResetComplete={handleResetComplete}
+      />
+    </>
   );
 };
