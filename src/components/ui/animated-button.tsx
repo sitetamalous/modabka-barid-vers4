@@ -27,16 +27,20 @@ export const AnimatedButton = ({
   type = "button"
 }: AnimatedButtonProps) => {
   const variants = {
-    primary: "bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white shadow-xl hover:shadow-2xl border-0",
-    secondary: "bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white shadow-xl hover:shadow-2xl border-0",
-    outline: "border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-600 bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl",
-    ghost: "text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 bg-white/50 backdrop-blur-sm shadow-md hover:shadow-lg"
+    primary:
+      "bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white shadow-xl hover:shadow-2xl border-0",
+    secondary:
+      "bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white shadow-xl hover:shadow-2xl border-0",
+    outline:
+      "border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-600 bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl",
+    ghost:
+      "text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 bg-white/50 backdrop-blur-sm shadow-md hover:shadow-lg"
   };
 
   const sizes = {
     sm: "px-4 py-3 text-sm min-h-[44px]",
     md: "px-6 py-4 text-sm md:text-base min-h-[50px]",
-    lg: "px-6 py-4 text-sm md:text-lg min-h-[56px]"
+    lg: "px-6 py-5 text-sm md:text-lg min-h-[60px]" // تم زيادة المسافات
   };
 
   return (
@@ -55,12 +59,16 @@ export const AnimatedButton = ({
         className
       )}
     >
-      <div className="flex items-center justify-center gap-2 flex-wrap text-sm sm:text-base overflow-hidden whitespace-normal text-center leading-snug w-full">
-        {Icon && iconPosition === "left" && <Icon className="w-4 h-4 flex-shrink-0" />}
-        <span className="break-words text-center leading-snug text-sm sm:text-base block w-full">
+      <div className="flex items-center justify-center gap-2 flex-nowrap overflow-hidden whitespace-normal text-center leading-snug w-full">
+        {Icon && iconPosition === "left" && (
+          <Icon className="w-4 h-4 flex-shrink-0" />
+        )}
+        <span className="px-2 py-1 break-words text-center text-sm sm:text-base block w-full">
           {children}
         </span>
-        {Icon && iconPosition === "right" && <Icon className="w-4 h-4 flex-shrink-0" />}
+        {Icon && iconPosition === "right" && (
+          <Icon className="w-4 h-4 flex-shrink-0" />
+        )}
       </div>
     </Button>
   );
