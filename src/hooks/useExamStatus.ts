@@ -15,7 +15,6 @@ export const useExamStatus = (examId: string) => {
         throw new Error('المستخدم غير مصرح له');
       }
 
-      // Fetch the latest completed attempt for this exam
       const { data, error } = await supabase
         .from('user_attempts')
         .select('*')
@@ -31,17 +30,18 @@ export const useExamStatus = (examId: string) => {
         throw error;
       }
 
-      // ✅ Ensure attempt_id is returned for answer review functionality
+      // ✅ نعيد attempt_id ضمن examStatus بشكل صريح
       return {
         score: data?.score,
         completed_at: data?.completed_at,
         correct_answers: data?.correct_answers,
-        attempt_id: data?.id || null
+        attempt_id: data?.id ?? null, // ← هذا السطر يحل المشكلة
       };
     },
     enabled: !!examId,
   });
 };
+
 
 /**
  * Hook to fetch all latest completed exam attempts for the user.
