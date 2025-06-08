@@ -17,7 +17,8 @@ import {
   Trash2,
   Calendar,
   MoreVertical,
-  Eye
+  Eye,
+  X
 } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
@@ -94,7 +95,6 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
     if (!examStatus?.attempt_id) {
       console.error('❌ No attempt_id found for this exam');
       console.error('❌ Full examStatus object:', examStatus);
-      alert('عذراً، لا يمكن عرض الإجابات. المحاولة غير موجودة.');
       return;
     }
     
@@ -102,7 +102,7 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
     setShowAnswers(true);
   };
 
-  // تحديد ما إذا كان الزر يجب أن يكون معطلاً
+  // Check if view answers should be disabled
   const isViewAnswersDisabled = !examStatus?.attempt_id;
   
   console.log('🎯 View Answers button status:', {
@@ -203,15 +203,15 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
               <Button
                 onClick={handleViewAnswers}
                 variant="outline"
+                disabled={isViewAnswersDisabled}
                 className={`transition-all duration-200 ${
                   isViewAnswersDisabled 
                     ? 'bg-gray-200 text-gray-400 border-gray-300 cursor-not-allowed' 
                     : 'bg-gradient-to-r from-blue-500 to-emerald-600 hover:from-blue-600 hover:to-emerald-700 text-white border-0'
                 }`}
-                disabled={isViewAnswersDisabled}
               >
                 <Eye className="w-4 h-4 ml-2" />
-                {isViewAnswersDisabled ? 'غير متاح' : 'الإطلاع على الإجابات'}
+                {isViewAnswersDisabled ? 'غير متاح' : 'مراجعة الإجابات'}
               </Button>
               <Button
                 onClick={handleRetakeExam}
@@ -233,19 +233,35 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
         </CardFooter>
       </Card>
 
-      {/* Dialog for viewing detailed answers */}
+      {/* Enhanced Dialog for viewing detailed answers */}
       {showAnswers && examStatus?.attempt_id && (
         <Dialog open={showAnswers} onOpenChange={setShowAnswers}>
           <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto" dir="rtl">
-            <DialogHeader>
-              <DialogTitle className="text-2xl text-center">
+            <DialogHeader className="relative">
+              <DialogTitle className="text-2xl text-center pr-8">
                 مراجعة إجابات الاختبار - {exam.title}
               </DialogTitle>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute left-0 top-0 h-8 w-8"
+                onClick={() => setShowAnswers(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </DialogHeader>
-            <DetailedAnswerReview attemptId={examStatus.attempt_id} />
-            <div className="flex justify-center mt-6">
-              <Button onClick={() => setShowAnswers(false)} variant="outline">
-                إغلاق
+            
+            <div className="mt-4">
+              <DetailedAnswerReview attemptId={examStatus.attempt_id} />
+            </div>
+            
+            <div className="flex justify-center mt-6 pt-4 border-t">
+              <Button 
+                onClick={() => setShowAnswers(false)} 
+                variant="outline"
+                className="px-8"
+              >
+                إغلاق المراجعة
               </Button>
             </div>
           </DialogContent>

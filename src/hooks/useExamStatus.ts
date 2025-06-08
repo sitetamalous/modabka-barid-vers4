@@ -71,19 +71,27 @@ export const useAllExamStatuses = () => {
             score: attempt.score,
             completed_at: attempt.completed_at,
             correct_answers: attempt.correct_answers,
-            attempt_id: attempt.id // ← هذا مهم جداً!
+            attempt_id: attempt.id // ← This is crucial!
           });
           
           examStatusMap.set(attempt.exam_id, {
             score: attempt.score,
             completed_at: attempt.completed_at,
             correct_answers: attempt.correct_answers,
-            attempt_id: attempt.id // ← التأكد من وجود attempt_id
+            attempt_id: attempt.id // ← Ensure attempt_id is included
           });
         }
       });
 
       console.log('📊 Final exam status map:', examStatusMap);
+      console.log('📊 Map entries with attempt_ids:', 
+        Array.from(examStatusMap.entries()).map(([examId, status]) => ({
+          examId,
+          hasAttemptId: !!status.attempt_id,
+          attemptId: status.attempt_id
+        }))
+      );
+      
       return examStatusMap;
     },
   });
