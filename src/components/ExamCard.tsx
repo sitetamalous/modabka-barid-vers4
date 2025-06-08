@@ -90,6 +90,7 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
     
     if (!examStatus?.attempt_id) {
       console.error('❌ No attempt_id found for this exam');
+      alert('عذراً، لا يمكن عرض الإجابات. المحاولة غير موجودة.');
       return;
     }
     
@@ -188,7 +189,7 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
               <Button
                 onClick={handleViewAnswers}
                 variant="outline"
-                className="bg-gradient-to-r from-blue-500 to-emerald-600 hover:from-blue-600 hover:to-emerald-700 text-white border-0"
+                className="bg-gradient-to-r from-blue-500 to-emerald-600 hover:from-blue-600 hover:to-emerald-700 text-white border-0 transition-all duration-200"
                 disabled={!examStatus?.attempt_id}
               >
                 <Eye className="w-4 h-4 ml-2" />
@@ -197,7 +198,7 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
               <Button
                 onClick={handleCompleteReset}
                 variant="destructive"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 transition-all duration-200"
               >
                 <Trash2 className="w-4 h-4" />
                 مسح وإعادة الاختبار
@@ -206,7 +207,7 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
           ) : (
             <Button 
               onClick={handleStartExam}
-              className="w-full bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700"
+              className="w-full bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 transition-all duration-200"
             >
               <Play className="w-4 h-4 ml-2" />
               بدء الامتحان
