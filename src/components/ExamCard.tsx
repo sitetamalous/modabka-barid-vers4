@@ -101,7 +101,7 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" dir="rtl">
+                <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={handleRetakeExam}>
                     <RotateCcw className="w-4 h-4 ml-2" />
                     إعادة الاختبار
