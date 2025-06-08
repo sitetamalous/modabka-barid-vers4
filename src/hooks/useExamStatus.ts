@@ -10,7 +10,7 @@ export const useExamStatus = (examId: string) => {
     queryKey: ['exam-status', examId],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       if (!user) {
         throw new Error('المستخدم غير مصرح له');
       }
@@ -30,12 +30,12 @@ export const useExamStatus = (examId: string) => {
         throw error;
       }
 
-      // ✅ نعيد attempt_id ضمن examStatus بشكل صريح
+      // ✅ إعادة بناء examStatus مع attempt_id
       return {
         score: data?.score,
         completed_at: data?.completed_at,
         correct_answers: data?.correct_answers,
-        attempt_id: data?.id ?? null, // ← هذا السطر يحل المشكلة
+        attempt_id: data?.id ?? null, // ⬅️ هذا ضروري ليعمل زر مراجعة الإجابات
       };
     },
     enabled: !!examId,
