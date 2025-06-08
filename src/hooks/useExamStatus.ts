@@ -12,7 +12,7 @@ export const useExamStatus = (examId: string) => {
       const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) {
-        throw new Error('المستخدم غير مصرح له');
+        throw new Error('Unauthorized user');
       }
 
       const { data, error } = await supabase
@@ -26,22 +26,20 @@ export const useExamStatus = (examId: string) => {
         .maybeSingle();
 
       if (error) {
-        console.error('❌ Error fetching exam status:', error);
         throw error;
       }
 
-      // ✅ إعادة بناء examStatus مع attempt_id
+      // ✅ إعادة بناء examStatus بشكل يدوي
       return {
-        score: data?.score,
-        completed_at: data?.completed_at,
-        correct_answers: data?.correct_answers,
-        attempt_id: data?.id ?? null, // ⬅️ هذا ضروري ليعمل زر مراجعة الإجابات
+        attempt_id: data?.id ?? null,
+        score: data?.score ?? null,
+        correct_answers: data?.correct_answers ?? null,
+        completed_at: data?.completed_at ?? null,
       };
     },
     enabled: !!examId,
   });
 };
-
 
 /**
  * Hook to fetch all latest completed exam attempts for the user.
