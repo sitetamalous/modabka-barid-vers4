@@ -84,6 +84,15 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
   };
 
   const handleViewAnswers = () => {
+    console.log('🔍 View answers clicked for exam:', exam.id);
+    console.log('🔍 Exam status:', examStatus);
+    console.log('🔍 Attempt ID:', examStatus?.attempt_id);
+    
+    if (!examStatus?.attempt_id) {
+      console.error('❌ No attempt_id found for this exam');
+      return;
+    }
+    
     setShowAnswers(true);
   };
 
@@ -175,13 +184,25 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
 
         <CardFooter className="pt-0">
           {isCompleted ? (
-            <Button
-              onClick={handleViewAnswers}
-              className="w-full bg-gradient-to-r from-blue-500 to-emerald-600 hover:from-blue-600 hover:to-emerald-700 text-white"
-            >
-              <Eye className="w-4 h-4 ml-2" />
-              الإطلاع على إجابات الاختبار
-            </Button>
+            <div className="grid grid-cols-2 gap-2 w-full">
+              <Button
+                onClick={handleViewAnswers}
+                variant="outline"
+                className="bg-gradient-to-r from-blue-500 to-emerald-600 hover:from-blue-600 hover:to-emerald-700 text-white border-0"
+                disabled={!examStatus?.attempt_id}
+              >
+                <Eye className="w-4 h-4 ml-2" />
+                الإطلاع على الإجابات
+              </Button>
+              <Button
+                onClick={handleCompleteReset}
+                variant="destructive"
+                className="flex items-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                مسح وإعادة الاختبار
+              </Button>
+            </div>
           ) : (
             <Button 
               onClick={handleStartExam}
