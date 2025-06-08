@@ -1,5 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 
 /**
  * Hook to fetch the latest completed attempt for a specific exam.
@@ -32,7 +30,7 @@ export const useExamStatus = (examId: string) => {
         throw error;
       }
 
-      // ❗❗❗ الحل هنا: بناء كائن examStatus بشكل يدوي
+      // ✅ الكائن الذي يجب أن يُرجع attempt_id
       return {
         attempt_id: data?.id ?? null,
         score: data?.score ?? null,
@@ -43,6 +41,7 @@ export const useExamStatus = (examId: string) => {
     enabled: !!examId,
   });
 };
+
 
 
 /**
