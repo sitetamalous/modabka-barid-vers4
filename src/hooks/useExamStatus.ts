@@ -30,7 +30,13 @@ export const useExamStatus = (examId: string) => {
         throw error;
       }
 
-      console.log("✅ Supabase raw data:", data);
+      console.log("✅ returning custom examStatus:", {
+  attempt_id: data?.id ?? null,
+  score: data?.score ?? null,
+  correct_answers: data?.correct_answers ?? null,
+  completed_at: data?.completed_at ?? null,
+});
+
 
       return {
         attempt_id: data?.id ?? null,
