@@ -30,20 +30,14 @@ export const useExamStatus = (examId: string) => {
         throw error;
       }
 
-      console.log("✅ returning custom examStatus:", {
+    console.log("🧠 Supabase data from queryFn:", data);
+return {
   attempt_id: data?.id ?? null,
   score: data?.score ?? null,
   correct_answers: data?.correct_answers ?? null,
   completed_at: data?.completed_at ?? null,
-});
+};
 
-
-      return {
-        attempt_id: data?.id ?? null,
-        score: data?.score ?? null,
-        correct_answers: data?.correct_answers ?? null,
-        completed_at: data?.completed_at ?? null,
-      };
     },
     enabled: !!examId,
   });
