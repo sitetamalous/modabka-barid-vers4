@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ResetExamDialog } from "@/components/ui/reset-exam-dialog";
+import { DetailedAnswerReview } from "@/components/DetailedAnswerReview";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
   Play, 
   Clock, 
@@ -15,7 +17,8 @@ import {
   RotateCcw,
   Trash2,
   Calendar,
-  MoreVertical
+  MoreVertical,
+  Eye
 } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
@@ -39,12 +42,14 @@ interface ExamCardProps {
     score?: number;
     completed_at?: string;
     correct_answers?: number;
+    attempt_id?: string;
   } | null;
   onStartExam: (examId: string) => void;
 }
 
 export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
   const [resetDialog, setResetDialog] = useState(false);
+  const [showAnswers, setShowAnswers] = useState(false);
   const isCompleted = !!examStatus;
   const score = examStatus?.score || 0;
 
@@ -76,6 +81,10 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
   const handleResetComplete = () => {
     // After reset, start the exam
     onStartExam(exam.id);
+  };
+
+  const handleViewAnswers = () => {
+    setShowAnswers(true);
   };
 
   return (
@@ -166,25 +175,13 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
 
         <CardFooter className="pt-0">
           {isCompleted ? (
-            <div className="grid grid-cols-2 gap-2 w-full">
-              <Button
-                variant="outline"
-                onClick={handleRetakeExam}
-                className="flex items-center gap-2"
-              >
-                <RotateCcw className="w-4 h-4" />
-                إعادة الاختبار
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleCompleteReset}
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                <Trash2 className="w-4 h-4" />
-                مسح وإعادة
-              </Button>
-            </div>
+            <Button
+              onClick={handleViewAnswers}
+              className="w-full bg-gradient-to-r from-blue-500 to-emerald-600 hover:from-blue-600 hover:to-emerald-700 text-white"
+            >
+              <Eye className="w-4 h-4 ml-2" />
+              الإطلاع على إجابات الاختبار
+            </Button>
           ) : (
             <Button 
               onClick={handleStartExam}
@@ -196,6 +193,25 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
           )}
         </CardFooter>
       </Card>
+
+      {/* Dialog for viewing detailed answers */}
+      {showAnswers && examStatus?.attempt_id && (
+        <Dialog open={showAnswers} onOpenChange={setShowAnswers}>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto" dir="rtl">
+            <DialogHeader>
+              <DialogTitle className="text-2xl text-center">
+                مراجعة إجابات الاختبار - {exam.title}
+              </DialogTitle>
+            </DialogHeader>
+            <DetailedAnswerReview attemptId={examStatus.attempt_id} />
+            <div className="flex justify-center mt-6">
+              <Button onClick={() => setShowAnswers(false)} variant="outline">
+                إغلاق
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       <ResetExamDialog
         examId={exam.id}
