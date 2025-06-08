@@ -103,7 +103,8 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
   };
 
   // Check if view answers should be disabled
-  const isViewAnswersDisabled = !examStatus?.attempt_id;
+ const isViewAnswersDisabled = !examStatus || !examStatus.attempt_id || examStatus.score === undefined;
+
   
   console.log('🎯 View Answers button status:', {
     isCompleted,
