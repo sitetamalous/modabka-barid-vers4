@@ -87,23 +87,27 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
     onStartExam(exam.id);
   };
 
-  const handleViewAnswers = () => {
-    console.log('🔍 View answers clicked for exam:', exam.id);
-    console.log('🔍 Exam status:', examStatus);
-    console.log('🔍 Attempt ID:', examStatus?.attempt_id);
-    
-    if (!examStatus?.attempt_id) {
-      console.error('❌ No attempt_id found for this exam');
-      console.error('❌ Full examStatus object:', examStatus);
-      return;
-    }
-    
-    console.log('✅ Opening answers review for attempt:', examStatus.attempt_id);
-    setShowAnswers(true);
-  };
+const handleViewAnswers = () => {
+  console.log('🔍 View answers clicked for exam:', exam.id);
+  console.log('🔍 Exam status:', examStatus);
+  console.log('🔍 Attempt ID:', examStatus?.attempt_id);
+
+  // ✅ تحقق يدوي قبل الفتح
+  if (!examStatus?.attempt_id) {
+    alert("⚠️ لا يمكن عرض المراجعة، لم يتم العثور على attempt_id");
+    console.error('❌ No attempt_id found for this exam');
+    console.error('❌ Full examStatus object:', examStatus);
+    return;
+  }
+
+  console.log('✅ Opening answers review for attempt:', examStatus.attempt_id);
+  setShowAnswers(true);
+};
+
 
   // Check if view answers should be disabled
- const isViewAnswersDisabled = !examStatus || !examStatus.attempt_id || examStatus.score === undefined;
+const isViewAnswersDisabled = !isCompleted;
+
 
   
   console.log('🎯 View Answers button status:', {
