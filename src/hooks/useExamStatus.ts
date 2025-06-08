@@ -5,6 +5,9 @@ import { supabase } from '@/integrations/supabase/client';
  * Hook to fetch the latest completed attempt for a specific exam.
  * Returns exam status including score, correct_answers, and attempt_id.
  */
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+
 export const useExamStatus = (examId: string) => {
   return useQuery({
     queryKey: ['exam-status', examId],
@@ -29,7 +32,7 @@ export const useExamStatus = (examId: string) => {
         throw error;
       }
 
-      // ✅ إعادة بناء examStatus بشكل يدوي
+      // ❗❗❗ الحل هنا: بناء كائن examStatus بشكل يدوي
       return {
         attempt_id: data?.id ?? null,
         score: data?.score ?? null,
@@ -40,6 +43,7 @@ export const useExamStatus = (examId: string) => {
     enabled: !!examId,
   });
 };
+
 
 /**
  * Hook to fetch all latest completed exam attempts for the user.
