@@ -6,8 +6,13 @@ export const useUserAnswers = (attemptId: string) => {
   return useQuery({
     queryKey: ['user-answers', attemptId],
     queryFn: async () => {
-      console.log('Fetching user answers for attempt:', attemptId);
+      console.log('🔍 Fetching user answers for attempt:', attemptId);
       
+      if (!attemptId) {
+        console.error('❌ No attemptId provided');
+        throw new Error('معرف المحاولة مطلوب');
+      }
+
       const { data, error } = await supabase
         .from('user_answers')
         .select(`
@@ -27,13 +32,19 @@ export const useUserAnswers = (attemptId: string) => {
         .eq('attempt_id', attemptId)
         .order('answered_at', { ascending: true });
 
-      console.log('User answers query result:', { data, error });
+      console.log('🔍 User answers query result:', { data, error, attemptId });
 
       if (error) {
-        console.error('Error fetching user answers:', error);
+        console.error('❌ Error fetching user answers:', error);
         throw error;
       }
 
+      if (!data || data.length === 0) {
+        console.warn('⚠️ No user answers found for attempt:', attemptId);
+        return [];
+      }
+
+      console.log('✅ Successfully fetched', data.length, 'user answers');
       return data;
     },
     enabled: !!attemptId,

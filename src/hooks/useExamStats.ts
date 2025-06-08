@@ -23,53 +23,55 @@ export const useExamStats = () => {
         throw totalExamsError;
       }
 
-      // Get unique completed exams (only count each exam once, regardless of retakes)
-      const { data: completedExams, error: completedExamsError } = await supabase
+      // Get ONLY unique exam IDs that user has completed
+      // This ensures each exam is counted only once, regardless of retakes
+      const { data: uniqueExamAttempts, error: uniqueExamAttemptsError } = await supabase
         .from('user_attempts')
         .select('exam_id')
         .eq('user_id', user.id)
         .eq('is_completed', true);
 
-      if (completedExamsError) {
-        console.error('Error fetching completed exams:', completedExamsError);
-        throw completedExamsError;
+      if (uniqueExamAttemptsError) {
+        console.error('Error fetching unique exam attempts:', uniqueExamAttemptsError);
+        throw uniqueExamAttemptsError;
       }
 
-      // Count unique exam IDs (remove duplicates)
-      const uniqueCompletedExams = [...new Set(completedExams?.map(attempt => attempt.exam_id) || [])];
+      // Count DISTINCT exam IDs only
+      const uniqueCompletedExamIds = [...new Set(uniqueExamAttempts?.map(attempt => attempt.exam_id) || [])];
+      console.log('📊 Unique completed exam IDs:', uniqueCompletedExamIds);
+      console.log('📊 Total unique exams completed:', uniqueCompletedExamIds.length);
 
-      // Get latest attempts for each exam to calculate average score
-      const { data: latestAttempts, error: latestAttemptsError } = await supabase
-        .from('user_attempts')
-        .select('exam_id, score')
-        .eq('user_id', user.id)
-        .eq('is_completed', true)
-        .order('completed_at', { ascending: false });
-
-      if (latestAttemptsError) {
-        console.error('Error fetching latest attempts:', latestAttemptsError);
-        throw latestAttemptsError;
-      }
-
-      // Get the latest score for each unique exam
-      const examScores = new Map();
-      latestAttempts?.forEach(attempt => {
-        if (!examScores.has(attempt.exam_id)) {
-          examScores.set(attempt.exam_id, attempt.score);
-        }
+      // Get LATEST attempt for each unique exam to calculate average score
+      const latestAttemptPromises = uniqueCompletedExamIds.map(async (examId) => {
+        const { data: latestAttempt } = await supabase
+          .from('user_attempts')
+          .select('score')
+          .eq('user_id', user.id)
+          .eq('exam_id', examId)
+          .eq('is_completed', true)
+          .order('completed_at', { ascending: false })
+          .limit(1)
+          .single();
+        
+        return latestAttempt?.score || 0;
       });
 
-      const scores = Array.from(examScores.values()).filter(score => score !== null);
-      const averageScore = scores.length > 0 
-        ? Math.round(scores.reduce((acc, score) => acc + score, 0) / scores.length)
+      const latestScores = await Promise.all(latestAttemptPromises);
+      const validScores = latestScores.filter(score => score > 0);
+      
+      const averageScore = validScores.length > 0 
+        ? Math.round(validScores.reduce((acc, score) => acc + score, 0) / validScores.length)
         : 0;
+
+      console.log('📊 Latest scores for unique exams:', validScores);
+      console.log('📊 Average score:', averageScore);
 
       return {
         totalExams: totalExams?.length || 0,
-        completedExams: uniqueCompletedExams.length,
+        completedExams: uniqueCompletedExamIds.length, // Count of UNIQUE exams completed
         averageScore,
         completionRate: totalExams?.length 
-          ? Math.round((uniqueCompletedExams.length / totalExams.length) * 100) 
+          ? Math.round((uniqueCompletedExamIds.length / totalExams.length) * 100) 
           : 0
       };
     },

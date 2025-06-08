@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -53,6 +52,10 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
   const isCompleted = !!examStatus;
   const score = examStatus?.score || 0;
 
+  console.log('🔍 ExamCard rendered for exam:', exam.id);
+  console.log('🔍 Exam status:', examStatus);
+  console.log('🔍 Attempt ID available:', examStatus?.attempt_id);
+
   const getScoreColor = (score: number) => {
     if (score >= 85) return "text-emerald-600";
     if (score >= 70) return "text-blue-600";
@@ -90,12 +93,23 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
     
     if (!examStatus?.attempt_id) {
       console.error('❌ No attempt_id found for this exam');
+      console.error('❌ Full examStatus object:', examStatus);
       alert('عذراً، لا يمكن عرض الإجابات. المحاولة غير موجودة.');
       return;
     }
     
+    console.log('✅ Opening answers review for attempt:', examStatus.attempt_id);
     setShowAnswers(true);
   };
+
+  // تحديد ما إذا كان الزر يجب أن يكون معطلاً
+  const isViewAnswersDisabled = !examStatus?.attempt_id;
+  
+  console.log('🎯 View Answers button status:', {
+    isCompleted,
+    hasAttemptId: !!examStatus?.attempt_id,
+    isDisabled: isViewAnswersDisabled
+  });
 
   return (
     <>
@@ -189,19 +203,22 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
               <Button
                 onClick={handleViewAnswers}
                 variant="outline"
-                className="bg-gradient-to-r from-blue-500 to-emerald-600 hover:from-blue-600 hover:to-emerald-700 text-white border-0 transition-all duration-200"
-                disabled={!examStatus?.attempt_id}
+                className={`transition-all duration-200 ${
+                  isViewAnswersDisabled 
+                    ? 'bg-gray-200 text-gray-400 border-gray-300 cursor-not-allowed' 
+                    : 'bg-gradient-to-r from-blue-500 to-emerald-600 hover:from-blue-600 hover:to-emerald-700 text-white border-0'
+                }`}
+                disabled={isViewAnswersDisabled}
               >
                 <Eye className="w-4 h-4 ml-2" />
-                الإطلاع على الإجابات
+                {isViewAnswersDisabled ? 'غير متاح' : 'الإطلاع على الإجابات'}
               </Button>
               <Button
-                onClick={handleCompleteReset}
-                variant="destructive"
-                className="flex items-center gap-2 transition-all duration-200"
+                onClick={handleRetakeExam}
+                className="bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 transition-all duration-200"
               >
-                <Trash2 className="w-4 h-4" />
-                مسح وإعادة الاختبار
+                <RotateCcw className="w-4 h-4 ml-2" />
+                إعادة الاختبار
               </Button>
             </div>
           ) : (

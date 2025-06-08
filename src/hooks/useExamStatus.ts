@@ -40,11 +40,14 @@ export const useAllExamStatuses = () => {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        throw new Error('المستخدم غير مصرح له');
+        console.log('❌ No authenticated user found');
+        return new Map();
       }
 
-      // Get the latest attempt for each exam (most recent attempt per exam)
-      const { data, error } = await supabase
+      console.log('👤 Fetching exam statuses for user:', user.id);
+
+      // Get the LATEST completed attempt for each exam
+      const { data: userAttempts, error } = await supabase
         .from('user_attempts')
         .select('*')
         .eq('user_id', user.id)
@@ -52,30 +55,36 @@ export const useAllExamStatuses = () => {
         .order('completed_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching exam statuses:', error);
+        console.error('Error fetching user attempts:', error);
         throw error;
       }
 
-      // Group by exam_id and keep only the latest attempt for each exam
-      const latestAttempts = new Map();
-      data?.forEach(attempt => {
-        if (!latestAttempts.has(attempt.exam_id)) {
-          latestAttempts.set(attempt.exam_id, attempt);
+      console.log('📊 All completed attempts:', userAttempts);
+
+      // Create a map with the LATEST attempt for each exam
+      const examStatusMap = new Map();
+      
+      userAttempts?.forEach(attempt => {
+        // Only keep the LATEST attempt for each exam
+        if (!examStatusMap.has(attempt.exam_id)) {
+          console.log(`📝 Setting status for exam ${attempt.exam_id}:`, {
+            score: attempt.score,
+            completed_at: attempt.completed_at,
+            correct_answers: attempt.correct_answers,
+            attempt_id: attempt.id // ← هذا مهم جداً!
+          });
+          
+          examStatusMap.set(attempt.exam_id, {
+            score: attempt.score,
+            completed_at: attempt.completed_at,
+            correct_answers: attempt.correct_answers,
+            attempt_id: attempt.id // ← التأكد من وجود attempt_id
+          });
         }
       });
 
-      // Convert back to array and create a map for easy lookup
-      const statusMap = new Map();
-      Array.from(latestAttempts.values()).forEach(attempt => {
-        statusMap.set(attempt.exam_id, {
-          score: attempt.score,
-          completed_at: attempt.completed_at,
-          correct_answers: attempt.correct_answers,
-          attempt_id: attempt.id
-        });
-      });
-
-      return statusMap;
+      console.log('📊 Final exam status map:', examStatusMap);
+      return examStatusMap;
     },
   });
 };
