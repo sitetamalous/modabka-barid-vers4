@@ -104,6 +104,17 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
     // Prepare answers data with correct answers validation
     const answersData = questions.map(question => {
       const selectedOptionId = answers[question.id];
+      
+      // تحقق من وجود إجابة صالحة
+      if (!selectedOptionId || selectedOptionId.trim() === '' || selectedOptionId === 'undefined' || selectedOptionId === 'null') {
+        console.log('Question without answer:', question.question_text.substring(0, 50), '...');
+        return {
+          questionId: question.id,
+          selectedOptionId: '', // سيتم تصفيته لاحقاً
+          isCorrect: false
+        };
+      }
+      
       const selectedOption = question.answer_options.find(opt => opt.id === selectedOptionId);
       const isCorrect = selectedOption?.is_correct || false;
       
@@ -113,7 +124,7 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
       
       return {
         questionId: question.id,
-        selectedOptionId: selectedOptionId || '',
+        selectedOptionId: selectedOptionId,
         isCorrect
       };
     });
@@ -147,9 +158,11 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
     let correct = 0;
     questions.forEach(question => {
       const selectedOptionId = answers[question.id];
-      const selectedOption = question.answer_options.find(opt => opt.id === selectedOptionId);
-      if (selectedOption?.is_correct) {
-        correct++;
+      if (selectedOptionId && selectedOptionId.trim() !== '') {
+        const selectedOption = question.answer_options.find(opt => opt.id === selectedOptionId);
+        if (selectedOption?.is_correct) {
+          correct++;
+        }
       }
     });
     return Math.round((correct / questions.length) * 100);
@@ -181,7 +194,7 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
     setSubmissionResult(null);
   };
 
-  const answeredCount = Object.keys(answers).length;
+  const answeredCount = Object.keys(answers).filter(key => answers[key] && answers[key].trim() !== '').length;
   const totalQuestions = questions?.length || 0;
   const progressPercentage = totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
 
@@ -424,7 +437,7 @@ const ExamModal = ({ examId, isOpen, onClose }: ExamModalProps) => {
                     className={`w-10 h-10 rounded-lg border-2 font-medium transition-all ${
                       index === currentQuestion
                         ? 'border-emerald-500 bg-emerald-500 text-white'
-                        : answers[question.id]
+                        : answers[question.id] && answers[question.id].trim() !== ''
                         ? 'border-blue-300 bg-blue-100 text-blue-700'
                         : 'border-gray-300 bg-white text-gray-700 hover:border-emerald-300'
                     }`}

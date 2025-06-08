@@ -44,32 +44,46 @@ export const useSubmitExamAttempt = () => {
 
       console.log('✅ Attempt updated successfully');
 
-      // Insert user answers
-      const userAnswers = answers.map(answer => ({
+      // Filter out answers without selected option and prepare user answers
+      const validAnswers = answers.filter(answer => 
+        answer.selectedOptionId && 
+        answer.selectedOptionId.trim() !== '' && 
+        answer.selectedOptionId !== 'undefined' &&
+        answer.selectedOptionId !== 'null'
+      );
+
+      const userAnswers = validAnswers.map(answer => ({
         attempt_id: attemptId,
         question_id: answer.questionId,
         selected_option_id: answer.selectedOptionId,
         is_correct: answer.isCorrect
       }));
 
-      console.log('💾 Inserting user answers:', userAnswers.length);
+      console.log('💾 Inserting user answers:', userAnswers.length, 'out of', answers.length, 'total questions');
+      console.log('💾 Filtered out', answers.length - validAnswers.length, 'questions without answers');
 
-      const { error: answersError } = await supabase
-        .from('user_answers')
-        .insert(userAnswers);
+      if (userAnswers.length > 0) {
+        const { error: answersError } = await supabase
+          .from('user_answers')
+          .insert(userAnswers);
 
-      if (answersError) {
-        console.error('❌ Error inserting answers:', answersError);
-        throw answersError;
+        if (answersError) {
+          console.error('❌ Error inserting answers:', answersError);
+          throw answersError;
+        }
+
+        console.log('✅ All valid answers saved successfully');
+      } else {
+        console.log('⚠️ No valid answers to insert');
       }
-
-      console.log('✅ All answers saved successfully');
 
       return { score, correctAnswers, totalQuestions: answers.length };
     },
     onSuccess: (result) => {
       console.log('🎉 Exam submission completed successfully:', result);
       queryClient.invalidateQueries({ queryKey: ['user-attempts'] });
+      queryClient.invalidateQueries({ queryKey: ['exam-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['exam-status'] });
       toast({
         title: "تم تسليم الامتحان بنجاح",
         description: `حصلت على ${result.score}% - ${result.correctAnswers} إجابة صحيحة من ${result.totalQuestions}`,
