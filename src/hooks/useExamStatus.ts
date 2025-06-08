@@ -30,7 +30,8 @@ export const useExamStatus = (examId: string) => {
         throw error;
       }
 
-      // ✅ الكائن الذي يجب أن يُرجع attempt_id
+      console.log("✅ Supabase raw data:", data);
+
       return {
         attempt_id: data?.id ?? null,
         score: data?.score ?? null,
