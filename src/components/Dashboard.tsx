@@ -12,22 +12,20 @@ import { MobileHeader } from "@/components/ui/mobile-header";
 import { MobileCard } from "@/components/ui/mobile-card";
 import { FloatingActionButton } from "@/components/ui/floating-action-button";
 import { DesktopNavigation } from "@/components/ui/desktop-navigation";
-import { 
-  GraduationCap, 
-  LogOut, 
-  BookOpen,
-  Loader2,
+import {
+  GraduationCap,
+  LogOut,
+  BookMarked,
   Home,
   BarChart3,
-  BookMarked,
   User,
   Plus,
-  TrendingUp
+  Loader2
 } from "lucide-react";
 import ExamModal from "@/components/ExamModal";
 import { useExams } from "@/hooks/useExams";
 import { useAllExams } from "@/hooks/useAllExams";
-import { useUserAttempts } from "@/hooks/useUserAttempts";
+import { useAllExamStatuses } from "@/hooks/useExamStatus"; // ✅ استخدم hook الصحيح
 import { useNavigate } from "react-router-dom";
 
 interface DashboardProps {
@@ -38,62 +36,20 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
   const [selectedExam, setSelectedExam] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'home' | 'stats' | 'exams' | 'profile'>('home');
   const navigate = useNavigate();
-  
+
   const { data: exams, isLoading: examsLoading } = useExams();
   const { data: allExams, isLoading: allExamsLoading } = useAllExams();
-  const { data: userAttempts, isLoading: attemptsLoading } = useUserAttempts();
-
-  // Log exam data for debugging
-  console.log('Dashboard - Exams data:', exams);
-  console.log('Dashboard - All exams data:', allExams);
-
-  // Calculate statistics
-  const completedAttempts = userAttempts?.filter(attempt => attempt.is_completed) || [];
-  const averageScore = completedAttempts.length > 0 
-    ? completedAttempts.reduce((sum, attempt) => sum + (attempt.score || 0), 0) / completedAttempts.length 
-    : 0;
-
-  const totalQuestions = exams?.reduce((sum, exam) => sum + exam.total_questions, 0) || 0;
-
-  const getExamStatus = (examId: string) => {
-    return userAttempts?.find(attempt => 
-      attempt.exam_id === examId && attempt.is_completed
-    );
-  };
+  const { data: allStatuses, isLoading: statusesLoading } = useAllExamStatuses(); // ✅
 
   const bottomNavItems = [
-    {
-      icon: Home,
-      label: 'الرئيسية',
-      active: activeTab === 'home',
-      onClick: () => setActiveTab('home')
-    },
-    {
-      icon: BarChart3,
-      label: 'الإحصائيات',
-      active: activeTab === 'stats',
-      onClick: () => setActiveTab('stats')
-    },
-    {
-      icon: BookMarked,
-      label: 'الامتحانات',
-      active: activeTab === 'exams',
-      onClick: () => setActiveTab('exams')
-    },
-    {
-      icon: User,
-      label: 'الملف الشخصي',
-      active: activeTab === 'profile',
-      onClick: () => setActiveTab('profile')
-    },
-    {
-      icon: LogOut,
-      label: 'خروج',
-      onClick: onLogout
-    }
+    { icon: Home, label: 'الرئيسية', active: activeTab === 'home', onClick: () => setActiveTab('home') },
+    { icon: BarChart3, label: 'الإحصائيات', active: activeTab === 'stats', onClick: () => setActiveTab('stats') },
+    { icon: BookMarked, label: 'الامتحانات', active: activeTab === 'exams', onClick: () => setActiveTab('exams') },
+    { icon: User, label: 'الملف الشخصي', active: activeTab === 'profile', onClick: () => setActiveTab('profile') },
+    { icon: LogOut, label: 'خروج', onClick: onLogout }
   ];
 
-  if (examsLoading || attemptsLoading || allExamsLoading) {
+  if (examsLoading || allExamsLoading || statusesLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50 flex items-center justify-center" dir="rtl">
         <div className="flex flex-col items-center gap-4 p-8">
@@ -110,18 +66,26 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
     );
   }
 
+  const getExamStatus = (examId: string) => {
+    return allStatuses?.get(examId); // ✅ استخدم الخريطة الجديدة
+  };
+
+  const completedAttempts = Array.from(allStatuses?.values() || []).filter(attempt => attempt?.is_completed);
+  const averageScore = completedAttempts.length > 0
+    ? completedAttempts.reduce((sum, attempt) => sum + (attempt.score || 0), 0) / completedAttempts.length
+    : 0;
+
+  const totalQuestions = exams?.reduce((sum, exam) => sum + exam.total_questions, 0) || 0;
+
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
         return (
           <div className="space-y-6">
-            {/* Welcome Section - Mobile Optimized */}
             <MobileCard className="mx-4 md:mx-0">
               <GradientCard className="p-6 text-center">
                 <div className="max-w-2xl mx-auto">
-                  <h2 className="text-2xl md:text-3xl font-bold mb-3">
-                    استعد لامتحان مكلف بالزبائن
-                  </h2>
+                  <h2 className="text-2xl md:text-3xl font-bold mb-3">استعد لامتحان مكلف بالزبائن</h2>
                   <p className="text-base md:text-lg opacity-90 leading-relaxed">
                     منصة شاملة للتحضير للامتحان الرسمي مع امتحانات تجريبية وأسئلة محدثة
                   </p>
@@ -129,7 +93,6 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
               </GradientCard>
             </MobileCard>
 
-            {/* Quick Stats - Mobile Grid */}
             <div className="px-4 md:px-0">
               <StatsOverview
                 totalExams={exams?.length || 0}
@@ -139,35 +102,25 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
               />
             </div>
 
-            {/* All Exams - Show all exams instead of just 4 */}
             <div className="px-4 md:px-0">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-gray-900">جميع الامتحانات المتاحة</h3>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setActiveTab('exams')}
-                  className="text-emerald-600"
-                >
+                <Button variant="ghost" size="sm" onClick={() => setActiveTab('exams')} className="text-emerald-600">
                   عرض تفاصيل أكثر
                 </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
-                {exams?.map((exam) => {
-                  const examStatus = getExamStatus(exam.id);
-                  return (
-                    <ExamCard
-                      key={exam.id}
-                      exam={exam}
-                      examStatus={examStatus}
-                      onStartExam={setSelectedExam}
-                    />
-                  );
-                })}
+                {exams?.map((exam) => (
+                  <ExamCard
+                    key={exam.id}
+                    exam={exam}
+                    examStatus={getExamStatus(exam.id)} // ✅ هنا
+                    onStartExam={setSelectedExam}
+                  />
+                ))}
               </div>
             </div>
 
-            {/* Study Tips - Mobile Optimized */}
             <div className="px-4 md:px-0">
               <StudyTips />
             </div>
@@ -185,17 +138,14 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
         return (
           <div className="px-4 md:px-0">
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
-              {exams?.map((exam) => {
-                const examStatus = getExamStatus(exam.id);
-                return (
-                  <ExamCard
-                    key={exam.id}
-                    exam={exam}
-                    examStatus={examStatus}
-                    onStartExam={setSelectedExam}
-                  />
-                );
-              })}
+              {exams?.map((exam) => (
+                <ExamCard
+                  key={exam.id}
+                  exam={exam}
+                  examStatus={getExamStatus(exam.id)} // ✅ هنا أيضًا
+                  onStartExam={setSelectedExam}
+                />
+              ))}
             </div>
           </div>
         );
@@ -214,15 +164,14 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
 
   return (
     <div className="min-h-dvh bg-gradient-to-br from-emerald-50 via-white to-blue-50" dir="rtl">
-      {/* Mobile Header */}
       <div className="md:hidden">
         <MobileHeader
           title="لوحة التحكم"
           subtitle="منصة التحضير لامتحان بريد الجزائر"
           rightAction={
             <div className="hidden md:flex">
-              <AnimatedButton 
-                variant="outline" 
+              <AnimatedButton
+                variant="outline"
                 onClick={onLogout}
                 icon={LogOut}
                 iconPosition="right"
@@ -235,34 +184,29 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
         />
       </div>
 
-      {/* Desktop Navigation */}
       <div className="hidden md:block">
-        <DesktopNavigation 
+        <DesktopNavigation
           activeTab={activeTab}
           onTabChange={setActiveTab}
           onLogout={onLogout}
         />
       </div>
 
-      {/* Main Content */}
       <main className="pb-20 md:pb-8">
         <div className="container mx-auto py-6">
           {renderContent()}
         </div>
       </main>
 
-      {/* Bottom Navigation - Mobile Only */}
       <div className="md:hidden">
         <BottomNavigation items={bottomNavItems} />
       </div>
 
-      {/* Floating Action Button - Mobile Only */}
       {activeTab === 'exams' && (
         <div className="md:hidden">
           <FloatingActionButton
             icon={Plus}
             onClick={() => {
-              // Could open a quick exam selector or start the first available exam
               if (exams && exams.length > 0) {
                 setSelectedExam(exams[0].id);
               }
@@ -273,7 +217,6 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
         </div>
       )}
 
-      {/* Exam Modal */}
       {selectedExam && (
         <ExamModal
           examId={selectedExam}
