@@ -3,6 +3,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+/**
+ * FRESH BUILD: Hook to submit exam attempt
+ * Ensures proper completion marking and data freshness
+ */
 export const useSubmitExamAttempt = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -17,7 +21,7 @@ export const useSubmitExamAttempt = () => {
       answers: { questionId: string; selectedOptionId: string; isCorrect: boolean }[];
       timeTaken: number;
     }) => {
-      console.log('🚀 Starting exam submission process...', { 
+      console.log('🚀 FRESH: Starting exam submission process...', { 
         attemptId, 
         answersCount: answers.length, 
         timeTaken 
@@ -27,7 +31,7 @@ export const useSubmitExamAttempt = () => {
       const correctAnswers = answers.filter(answer => answer.isCorrect).length;
       const score = Math.round((correctAnswers / answers.length) * 100);
       
-      console.log('📊 Calculated results:', { 
+      console.log('📊 FRESH: Calculated results:', { 
         correctAnswers, 
         totalQuestions: answers.length, 
         score 
@@ -48,11 +52,11 @@ export const useSubmitExamAttempt = () => {
         .single();
 
       if (attemptError) {
-        console.error('❌ Error updating attempt:', attemptError);
+        console.error('❌ FRESH: Error updating attempt:', attemptError);
         throw attemptError;
       }
 
-      console.log('✅ Attempt updated successfully:', updatedAttempt);
+      console.log('✅ FRESH: Attempt updated successfully:', updatedAttempt);
 
       // Filter and prepare valid answers
       const validAnswers = answers.filter(answer => 
@@ -69,7 +73,7 @@ export const useSubmitExamAttempt = () => {
         is_correct: answer.isCorrect
       }));
 
-      console.log('💾 Preparing to insert user answers:', {
+      console.log('💾 FRESH: Preparing to insert user answers:', {
         validAnswersCount: validAnswers.length,
         totalAnswersReceived: answers.length,
         filteredOut: answers.length - validAnswers.length
@@ -82,13 +86,13 @@ export const useSubmitExamAttempt = () => {
           .select();
 
         if (answersError) {
-          console.error('❌ Error inserting answers:', answersError);
+          console.error('❌ FRESH: Error inserting answers:', answersError);
           throw answersError;
         }
 
-        console.log('✅ User answers saved successfully:', insertedAnswers?.length);
+        console.log('✅ FRESH: User answers saved successfully:', insertedAnswers?.length);
       } else {
-        console.log('⚠️ No valid answers to insert for attempt:', attemptId);
+        console.log('⚠️ FRESH: No valid answers to insert for attempt:', attemptId);
       }
 
       const result = { 
@@ -98,20 +102,23 @@ export const useSubmitExamAttempt = () => {
         attemptId: updatedAttempt.id 
       };
 
-      console.log('🎉 Submission completed successfully:', result);
+      console.log('🎉 FRESH: Submission completed successfully:', result);
       return result;
     },
     onSuccess: (result) => {
-      console.log('🎉 Exam submission mutation completed successfully:', result);
+      console.log('🎉 FRESH: Exam submission mutation completed successfully:', result);
       
-      // Invalidate all related queries to ensure fresh data
+      // FRESH BUILD: Invalidate all exam-related queries with new keys
       queryClient.invalidateQueries({ queryKey: ['user-attempts'] });
-      queryClient.invalidateQueries({ queryKey: ['all-exam-statuses'] });
+      queryClient.invalidateQueries({ queryKey: ['all-exam-statuses-v2'] }); // New key
       queryClient.invalidateQueries({ queryKey: ['exam-stats'] });
       queryClient.invalidateQueries({ queryKey: ['exam-status'] });
-      queryClient.invalidateQueries({ queryKey: ['user-answers'] });
+      queryClient.invalidateQueries({ queryKey: ['user-answers-v2'] }); // New key
       
-      console.log('🔄 All related queries invalidated');
+      // Force refetch of exam statuses
+      queryClient.refetchQueries({ queryKey: ['all-exam-statuses-v2'] });
+      
+      console.log('🔄 FRESH: All related queries invalidated and refetched');
       
       toast({
         title: "تم تسليم الامتحان بنجاح",
@@ -119,7 +126,7 @@ export const useSubmitExamAttempt = () => {
       });
     },
     onError: (error) => {
-      console.error('💥 Exam submission failed:', error);
+      console.error('💥 FRESH: Exam submission failed:', error);
       toast({
         title: "خطأ في تسليم الامتحان",
         description: error.message,

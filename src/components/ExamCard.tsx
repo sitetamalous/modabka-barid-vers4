@@ -40,12 +40,13 @@ interface ExamCardProps {
     duration_minutes: number;
   };
   examStatus?: {
-    score?: number;
-    completed_at?: string;
-    correct_answers?: number;
+    exam_id?: string;
     attempt_id?: string;
-    total_questions?: number;
+    score?: number;
+    correct_answers?: number;
+    completed_at?: string;
     is_completed?: boolean;
+    total_questions?: number;
   } | null;
   onStartExam: (examId: string) => void;
 }
@@ -54,27 +55,16 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
   const [resetDialog, setResetDialog] = useState(false);
   const [showAnswers, setShowAnswers] = useState(false);
   
-  // Definitive completion checking - multiple validation points
-  const hasValidAttemptId = !!(examStatus?.attempt_id && examStatus.attempt_id.trim() !== '');
-  const hasValidScore = typeof examStatus?.score === 'number';
-  const hasCompletedAt = !!(examStatus?.completed_at && examStatus.completed_at.trim() !== '');
-  const isExplicitlyCompleted = examStatus?.is_completed === true;
+  // FRESH BUILD: Simple, clear completion logic
+  const isCompleted = examStatus?.is_completed === true;
   
-  // Final completion decision - ALL conditions must be true
-  const isCompleted = hasValidAttemptId && hasValidScore && hasCompletedAt && isExplicitlyCompleted;
-  
+  console.log('🔍 FRESH EXAM CARD BUILD for exam:', exam.id);
+  console.log('📊 Received exam status:', examStatus);
+  console.log('🎯 Is completed (simple check):', isCompleted);
+  console.log('🎮 Will show:', isCompleted ? 'Review Exam Button' : 'Start Exam Button');
+
   const score = examStatus?.score || 0;
   const attemptId = examStatus?.attempt_id;
-
-  console.log('🔍 ExamCard Completion Analysis for exam:', exam.id);
-  console.log('  📊 Raw exam status:', examStatus);
-  console.log('  ✅ Validation checks:');
-  console.log('    - Has valid attempt_id:', hasValidAttemptId, '(value:', examStatus?.attempt_id, ')');
-  console.log('    - Has valid score:', hasValidScore, '(value:', examStatus?.score, ')');
-  console.log('    - Has completed_at:', hasCompletedAt, '(value:', examStatus?.completed_at, ')');
-  console.log('    - Is explicitly completed:', isExplicitlyCompleted, '(value:', examStatus?.is_completed, ')');
-  console.log('  🎯 FINAL DECISION - Is Completed:', isCompleted);
-  console.log('  🎮 Will show button:', isCompleted ? 'Review Answers + Retake' : 'Start Exam');
 
   const getScoreColor = (score: number) => {
     if (score >= 85) return "text-emerald-600";
@@ -90,39 +80,34 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
   };
 
   const handleStartExam = () => {
-    console.log('🚀 Starting new exam for:', exam.id);
+    console.log('🚀 FRESH: Starting exam for:', exam.id);
     onStartExam(exam.id);
   };
 
   const handleRetakeExam = () => {
-    console.log('🔄 Retaking exam for:', exam.id);
+    console.log('🔄 FRESH: Retaking exam for:', exam.id);
     onStartExam(exam.id);
   };
 
   const handleCompleteReset = () => {
-    console.log('🗑️ Complete reset for exam:', exam.id);
+    console.log('🗑️ FRESH: Complete reset for exam:', exam.id);
     setResetDialog(true);
   };
 
   const handleResetComplete = () => {
-    // After reset, start the exam
     onStartExam(exam.id);
   };
 
-  const handleViewAnswers = () => {
-    console.log('👁️ View answers clicked for exam:', exam.id);
-    console.log('  - Attempt ID:', attemptId);
-    console.log('  - Is Completed:', isCompleted);
+  const handleReviewExam = () => {
+    console.log('👁️ FRESH: Review exam clicked for:', exam.id);
+    console.log('📝 Attempt ID:', attemptId);
     
-    if (!isCompleted || !attemptId) {
-      console.error('❌ Cannot view answers - validation failed:');
-      console.error('  - Is Completed:', isCompleted);
-      console.error('  - Attempt ID:', attemptId);
-      console.error('  - Full exam status:', examStatus);
+    if (!attemptId) {
+      console.error('❌ FRESH: No attempt ID found');
       return;
     }
 
-    console.log('✅ Opening detailed answer review for attempt:', attemptId);
+    console.log('✅ FRESH: Opening review modal');
     setShowAnswers(true);
   };
 
@@ -167,6 +152,7 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
             )}
           </div>
 
+          {/* FRESH BUILD: Only show completion status if truly completed */}
           {isCompleted && (
             <div className="mt-4 p-4 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg border border-emerald-200">
               <div className="flex items-center justify-between mb-2">
@@ -185,13 +171,13 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-emerald-600" />
                   <span className="text-gray-700">
-                    {examStatus.correct_answers}/{examStatus.total_questions || exam.total_questions} صحيح
+                    {examStatus?.correct_answers}/{examStatus?.total_questions || exam.total_questions} صحيح
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-blue-600" />
                   <span className="text-gray-700">
-                    {examStatus.completed_at && format(new Date(examStatus.completed_at), 'dd/MM', { locale: ar })}
+                    {examStatus?.completed_at && format(new Date(examStatus.completed_at), 'dd/MM', { locale: ar })}
                   </span>
                 </div>
               </div>
@@ -213,10 +199,11 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
         </CardContent>
 
         <CardFooter className="pt-0">
+          {/* FRESH BUILD: Clear button logic based on completion status */}
           {isCompleted ? (
             <div className="grid grid-cols-2 gap-2 w-full">
               <Button
-                onClick={handleViewAnswers}
+                onClick={handleReviewExam}
                 className="bg-gradient-to-r from-blue-500 to-emerald-600 hover:from-blue-600 hover:to-emerald-700 text-white border-0 transition-all duration-200"
               >
                 <Eye className="w-4 h-4 ml-2" />
@@ -242,7 +229,7 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
         </CardFooter>
       </Card>
 
-      {/* Dialog for viewing detailed answers */}
+      {/* FRESH BUILD: Review modal */}
       {showAnswers && attemptId && (
         <Dialog open={showAnswers} onOpenChange={setShowAnswers}>
           <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto" dir="rtl">

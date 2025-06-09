@@ -13,25 +13,25 @@ export const ExamsList = () => {
   const [selectedExamId, setSelectedExamId] = useState<string | null>(null);
 
   const handleStartExam = (examId: string) => {
-    console.log('🚀 Starting exam from ExamsList:', examId);
+    console.log('🚀 FRESH: Starting exam from ExamsList:', examId);
     setSelectedExamId(examId);
   };
 
   const handleCloseExam = () => {
-    console.log('🔚 Closing exam modal from ExamsList');
+    console.log('🔚 FRESH: Closing exam modal from ExamsList');
     setSelectedExamId(null);
   };
 
-  console.log('📊 ExamsList Debug Info:');
+  console.log('📊 FRESH EXAMS LIST DEBUG:');
   console.log('  - Exams loading:', examsLoading);
   console.log('  - Statuses loading:', statusesLoading);
   console.log('  - Exams count:', exams?.length || 0);
   console.log('  - Exam statuses map size:', examStatuses?.size || 0);
   
   if (!statusesLoading && examStatuses) {
-    console.log('📊 Exam statuses map contents:');
+    console.log('📊 FRESH: Exam statuses contents:');
     examStatuses.forEach((status, examId) => {
-      console.log(`    Exam ${examId}:`, status);
+      console.log(`    📝 Exam ${examId}:`, status);
     });
   }
 
@@ -78,10 +78,10 @@ export const ExamsList = () => {
         {exams.map((exam) => {
           const examStatus = examStatuses?.get(exam.id) || null;
           
-          console.log(`🔍 Rendering ExamCard for exam ${exam.id}:`);
+          console.log(`🔍 FRESH: Rendering ExamCard for exam ${exam.id}:`);
           console.log(`  - Exam title: ${exam.title}`);
           console.log(`  - Status found:`, examStatus);
-          console.log(`  - Has attempt_id:`, !!examStatus?.attempt_id);
+          console.log(`  - Is completed:`, examStatus?.is_completed);
           
           return (
             <ExamCard

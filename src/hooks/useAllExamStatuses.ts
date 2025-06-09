@@ -1,74 +1,76 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 /**
  * Hook to fetch all latest completed exam attempts for the user.
  * Returns a Map<examId, examStatus> including attempt_id.
+ * REBUILT FROM SCRATCH - Fresh implementation
  */
 export const useAllExamStatuses = () => {
   return useQuery({
-    queryKey: ['all-exam-statuses'],
+    queryKey: ['all-exam-statuses-v2'], // New query key to avoid cache conflicts
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        console.log('❌ No authenticated user found');
+        console.log('🚫 No authenticated user found');
         return new Map();
       }
 
-      console.log('👤 Fetching exam statuses for user:', user.id);
+      console.log('🔄 FRESH BUILD: Fetching exam statuses for user:', user.id);
 
-      // Fetch all completed attempts with proper ordering
-      const { data: userAttempts, error } = await supabase
+      // Fetch ONLY completed attempts, ordered by completion date (latest first)
+      const { data: completedAttempts, error } = await supabase
         .from('user_attempts')
         .select('*')
         .eq('user_id', user.id)
         .eq('is_completed', true)
+        .not('completed_at', 'is', null)
+        .not('score', 'is', null)
         .order('completed_at', { ascending: false });
 
       if (error) {
-        console.error('❌ Error fetching user attempts:', error);
+        console.error('💥 Error fetching completed attempts:', error);
         throw error;
       }
 
-      console.log('📊 All completed attempts found:', userAttempts?.length || 0);
-      console.log('📊 Attempts details:', userAttempts);
+      console.log('📊 FRESH DATA: Found completed attempts:', completedAttempts?.length || 0);
 
-      // Create a map to store only the latest attempt per exam
+      // Create a clean map with only the latest attempt per exam
       const examStatusMap = new Map();
       
-      // Group by exam_id and keep only the latest attempt
-      userAttempts?.forEach(attempt => {
+      // Group by exam_id and keep only the most recent completed attempt
+      completedAttempts?.forEach(attempt => {
         const examId = attempt.exam_id;
         
-        // Only set if this exam hasn't been processed yet (first occurrence is the latest due to ordering)
+        // Only add if this exam hasn't been processed yet (first = latest due to ordering)
         if (!examStatusMap.has(examId)) {
-          const examStatus = {
+          // Build clean, consistent status object
+          const cleanStatus = {
+            exam_id: examId,
+            attempt_id: attempt.id,
             score: attempt.score,
-            completed_at: attempt.completed_at,
             correct_answers: attempt.correct_answers,
-            attempt_id: attempt.id, // This is the key field
-            total_questions: attempt.total_questions,
-            is_completed: true // Explicitly set this since we only fetch completed attempts
+            completed_at: attempt.completed_at,
+            is_completed: true, // Always true since we only fetch completed
+            total_questions: attempt.total_questions
           };
           
-          console.log(`✅ Setting status for exam ${examId}:`, examStatus);
-          console.log(`✅ Validation - completed_at: ${!!attempt.completed_at}, attempt_id: ${!!attempt.id}, score: ${typeof attempt.score === 'number'}, is_completed: true`);
-          examStatusMap.set(examId, examStatus);
+          console.log(`✅ FRESH: Setting status for exam ${examId}:`, cleanStatus);
+          examStatusMap.set(examId, cleanStatus);
         }
       });
 
-      console.log('📊 Final exam status map size:', examStatusMap.size);
-      console.log('📊 Final exam status map entries:');
+      console.log('🎯 FRESH BUILD: Final exam status map size:', examStatusMap.size);
       examStatusMap.forEach((status, examId) => {
-        console.log(`  Exam ${examId}:`, status);
-        console.log(`  Status validation - completed_at: ${!!status.completed_at}, attempt_id: ${!!status.attempt_id}, score: ${typeof status.score === 'number'}, is_completed: ${status.is_completed}`);
+        console.log(`📝 Exam ${examId} status:`, status);
       });
       
       return examStatusMap;
     },
-    staleTime: 5000, // 5 seconds - very fresh data
-    gcTime: 300000, // 5 minutes
+    staleTime: 0, // Always fresh - no stale data
+    gcTime: 0, // Don't cache - always rebuild
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 };
