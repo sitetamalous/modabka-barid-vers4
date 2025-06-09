@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -55,16 +54,22 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
   const [resetDialog, setResetDialog] = useState(false);
   const [showAnswers, setShowAnswers] = useState(false);
   
-  // FRESH BUILD: Simple, clear completion logic
+  // FIXED: Clear completion logic with detailed logging
   const isCompleted = examStatus?.is_completed === true;
   
-  console.log('🔍 FRESH EXAM CARD BUILD for exam:', exam.id);
-  console.log('📊 Received exam status:', examStatus);
-  console.log('🎯 Is completed (simple check):', isCompleted);
-  console.log('🎮 Will show:', isCompleted ? 'Review Exam Button' : 'Start Exam Button');
+  console.log('🔍 FIXED EXAM CARD for exam:', exam.id);
+  console.log('📊 FIXED: Received exam status:', examStatus);
+  console.log('🎯 FIXED: Is completed:', isCompleted);
+  console.log('🎯 FIXED: attempt_id from examStatus:', examStatus?.attempt_id);
+  console.log('🎮 FIXED: Will show:', isCompleted ? 'Review Exam Button' : 'Start Exam Button');
 
   const score = examStatus?.score || 0;
   const attemptId = examStatus?.attempt_id;
+
+  // CRITICAL: Log attempt_id availability
+  console.log('🔍 FIXED: Final attemptId for review:', attemptId);
+  console.log('🔍 FIXED: attemptId type:', typeof attemptId);
+  console.log('🔍 FIXED: attemptId truthy?', !!attemptId);
 
   const getScoreColor = (score: number) => {
     if (score >= 85) return "text-emerald-600";
@@ -80,17 +85,17 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
   };
 
   const handleStartExam = () => {
-    console.log('🚀 FRESH: Starting exam for:', exam.id);
+    console.log('🚀 FIXED: Starting exam for:', exam.id);
     onStartExam(exam.id);
   };
 
   const handleRetakeExam = () => {
-    console.log('🔄 FRESH: Retaking exam for:', exam.id);
+    console.log('🔄 FIXED: Retaking exam for:', exam.id);
     onStartExam(exam.id);
   };
 
   const handleCompleteReset = () => {
-    console.log('🗑️ FRESH: Complete reset for exam:', exam.id);
+    console.log('🗑️ FIXED: Complete reset for exam:', exam.id);
     setResetDialog(true);
   };
 
@@ -99,15 +104,18 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
   };
 
   const handleReviewExam = () => {
-    console.log('👁️ FRESH: Review exam clicked for:', exam.id);
-    console.log('📝 Attempt ID:', attemptId);
+    console.log('👁️ FIXED: Review exam clicked for:', exam.id);
+    console.log('📝 FIXED: Attempt ID from examStatus:', examStatus?.attempt_id);
+    console.log('📝 FIXED: Final attemptId variable:', attemptId);
     
     if (!attemptId) {
-      console.error('❌ FRESH: No attempt ID found');
+      console.error('❌ FIXED: No attempt ID found for review');
+      console.error('❌ FIXED: examStatus object:', examStatus);
+      console.error('❌ FIXED: examStatus.attempt_id:', examStatus?.attempt_id);
       return;
     }
 
-    console.log('✅ FRESH: Opening review modal');
+    console.log('✅ FIXED: Opening review modal with attempt_id:', attemptId);
     setShowAnswers(true);
   };
 
@@ -152,7 +160,7 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
             )}
           </div>
 
-          {/* FRESH BUILD: Only show completion status if truly completed */}
+          {/* FIXED: Only show completion status if truly completed */}
           {isCompleted && (
             <div className="mt-4 p-4 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg border border-emerald-200">
               <div className="flex items-center justify-between mb-2">
@@ -199,15 +207,20 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
         </CardContent>
 
         <CardFooter className="pt-0">
-          {/* FRESH BUILD: Clear button logic based on completion status */}
+          {/* FIXED: Clear button logic with attempt_id validation */}
           {isCompleted ? (
             <div className="grid grid-cols-2 gap-2 w-full">
               <Button
                 onClick={handleReviewExam}
-                className="bg-gradient-to-r from-blue-500 to-emerald-600 hover:from-blue-600 hover:to-emerald-700 text-white border-0 transition-all duration-200"
+                disabled={!attemptId}  // FIXED: Disable if no attempt_id
+                className={`${
+                  attemptId 
+                    ? "bg-gradient-to-r from-blue-500 to-emerald-600 hover:from-blue-600 hover:to-emerald-700 text-white" 
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                } border-0 transition-all duration-200`}
               >
                 <Eye className="w-4 h-4 ml-2" />
-                مراجعة الإجابات
+                {attemptId ? 'مراجعة الإجابات' : 'غير متاح'}
               </Button>
               <Button
                 onClick={handleRetakeExam}
@@ -229,7 +242,7 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
         </CardFooter>
       </Card>
 
-      {/* FRESH BUILD: Review modal */}
+      {/* FIXED: Review modal with proper attempt_id validation */}
       {showAnswers && attemptId && (
         <Dialog open={showAnswers} onOpenChange={setShowAnswers}>
           <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto" dir="rtl">
