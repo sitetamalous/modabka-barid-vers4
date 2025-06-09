@@ -49,11 +49,12 @@ export const useAllExamStatuses = () => {
             completed_at: attempt.completed_at,
             correct_answers: attempt.correct_answers,
             attempt_id: attempt.id, // This is the key field
-            total_questions: attempt.total_questions
+            total_questions: attempt.total_questions,
+            is_completed: true // Explicitly set this since we only fetch completed attempts
           };
           
           console.log(`✅ Setting status for exam ${examId}:`, examStatus);
-          console.log(`✅ Completion check - completed_at: ${attempt.completed_at}, attempt_id: ${attempt.id}, score: ${attempt.score}`);
+          console.log(`✅ Validation - completed_at: ${!!attempt.completed_at}, attempt_id: ${!!attempt.id}, score: ${typeof attempt.score === 'number'}, is_completed: true`);
           examStatusMap.set(examId, examStatus);
         }
       });
@@ -62,12 +63,12 @@ export const useAllExamStatuses = () => {
       console.log('📊 Final exam status map entries:');
       examStatusMap.forEach((status, examId) => {
         console.log(`  Exam ${examId}:`, status);
-        console.log(`  Completion check - has completed_at: ${!!status.completed_at}, has attempt_id: ${!!status.attempt_id}, has score: ${typeof status.score === 'number'}`);
+        console.log(`  Status validation - completed_at: ${!!status.completed_at}, attempt_id: ${!!status.attempt_id}, score: ${typeof status.score === 'number'}, is_completed: ${status.is_completed}`);
       });
       
       return examStatusMap;
     },
-    staleTime: 10000, // 10 seconds - reduced for quicker updates
+    staleTime: 5000, // 5 seconds - very fresh data
     gcTime: 300000, // 5 minutes
   });
 };

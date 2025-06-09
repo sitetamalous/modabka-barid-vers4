@@ -45,6 +45,7 @@ interface ExamCardProps {
     correct_answers?: number;
     attempt_id?: string;
     total_questions?: number;
+    is_completed?: boolean;
   } | null;
   onStartExam: (examId: string) => void;
 }
@@ -53,23 +54,27 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
   const [resetDialog, setResetDialog] = useState(false);
   const [showAnswers, setShowAnswers] = useState(false);
   
-  // More robust checking for completed status
-  const isCompleted = !!(
-    examStatus && 
-    examStatus.completed_at && 
-    examStatus.attempt_id && 
-    typeof examStatus.score === 'number'
-  );
+  // Definitive completion checking - multiple validation points
+  const hasValidAttemptId = !!(examStatus?.attempt_id && examStatus.attempt_id.trim() !== '');
+  const hasValidScore = typeof examStatus?.score === 'number';
+  const hasCompletedAt = !!(examStatus?.completed_at && examStatus.completed_at.trim() !== '');
+  const isExplicitlyCompleted = examStatus?.is_completed === true;
+  
+  // Final completion decision - ALL conditions must be true
+  const isCompleted = hasValidAttemptId && hasValidScore && hasCompletedAt && isExplicitlyCompleted;
   
   const score = examStatus?.score || 0;
   const attemptId = examStatus?.attempt_id;
 
-  console.log('🔍 ExamCard Debug Info for exam:', exam.id);
-  console.log('  - Exam Status received:', examStatus);
-  console.log('  - completed_at:', examStatus?.completed_at);
-  console.log('  - attempt_id:', examStatus?.attempt_id);
-  console.log('  - score:', examStatus?.score);
-  console.log('  - Is Completed (final decision):', isCompleted);
+  console.log('🔍 ExamCard Completion Analysis for exam:', exam.id);
+  console.log('  📊 Raw exam status:', examStatus);
+  console.log('  ✅ Validation checks:');
+  console.log('    - Has valid attempt_id:', hasValidAttemptId, '(value:', examStatus?.attempt_id, ')');
+  console.log('    - Has valid score:', hasValidScore, '(value:', examStatus?.score, ')');
+  console.log('    - Has completed_at:', hasCompletedAt, '(value:', examStatus?.completed_at, ')');
+  console.log('    - Is explicitly completed:', isExplicitlyCompleted, '(value:', examStatus?.is_completed, ')');
+  console.log('  🎯 FINAL DECISION - Is Completed:', isCompleted);
+  console.log('  🎮 Will show button:', isCompleted ? 'Review Answers + Retake' : 'Start Exam');
 
   const getScoreColor = (score: number) => {
     if (score >= 85) return "text-emerald-600";
@@ -105,12 +110,12 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
   };
 
   const handleViewAnswers = () => {
-    console.log('👁️ View answers clicked');
+    console.log('👁️ View answers clicked for exam:', exam.id);
     console.log('  - Attempt ID:', attemptId);
     console.log('  - Is Completed:', isCompleted);
     
     if (!isCompleted || !attemptId) {
-      console.error('❌ Cannot view answers - missing data:');
+      console.error('❌ Cannot view answers - validation failed:');
       console.error('  - Is Completed:', isCompleted);
       console.error('  - Attempt ID:', attemptId);
       console.error('  - Full exam status:', examStatus);
