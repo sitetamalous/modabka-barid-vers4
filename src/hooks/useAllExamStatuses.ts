@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -52,6 +53,7 @@ export const useAllExamStatuses = () => {
           };
           
           console.log(`✅ Setting status for exam ${examId}:`, examStatus);
+          console.log(`✅ Completion check - completed_at: ${attempt.completed_at}, attempt_id: ${attempt.id}, score: ${attempt.score}`);
           examStatusMap.set(examId, examStatus);
         }
       });
@@ -60,11 +62,12 @@ export const useAllExamStatuses = () => {
       console.log('📊 Final exam status map entries:');
       examStatusMap.forEach((status, examId) => {
         console.log(`  Exam ${examId}:`, status);
+        console.log(`  Completion check - has completed_at: ${!!status.completed_at}, has attempt_id: ${!!status.attempt_id}, has score: ${typeof status.score === 'number'}`);
       });
       
       return examStatusMap;
     },
-    staleTime: 30000, // 30 seconds
+    staleTime: 10000, // 10 seconds - reduced for quicker updates
     gcTime: 300000, // 5 minutes
   });
 };

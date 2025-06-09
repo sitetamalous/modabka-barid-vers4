@@ -53,17 +53,23 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
   const [resetDialog, setResetDialog] = useState(false);
   const [showAnswers, setShowAnswers] = useState(false);
   
-  // Enhanced checking for completed status
-  const isCompleted = !!(examStatus && examStatus.score !== undefined && examStatus.attempt_id);
+  // More robust checking for completed status
+  const isCompleted = !!(
+    examStatus && 
+    examStatus.completed_at && 
+    examStatus.attempt_id && 
+    typeof examStatus.score === 'number'
+  );
+  
   const score = examStatus?.score || 0;
   const attemptId = examStatus?.attempt_id;
 
-  console.log('🔍 ExamCard Debug Info:');
-  console.log('  - Exam ID:', exam.id);
+  console.log('🔍 ExamCard Debug Info for exam:', exam.id);
   console.log('  - Exam Status received:', examStatus);
-  console.log('  - Is Completed:', isCompleted);
-  console.log('  - Attempt ID:', attemptId);
-  console.log('  - Score:', score);
+  console.log('  - completed_at:', examStatus?.completed_at);
+  console.log('  - attempt_id:', examStatus?.attempt_id);
+  console.log('  - score:', examStatus?.score);
+  console.log('  - Is Completed (final decision):', isCompleted);
 
   const getScoreColor = (score: number) => {
     if (score >= 85) return "text-emerald-600";
@@ -114,13 +120,6 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
     console.log('✅ Opening detailed answer review for attempt:', attemptId);
     setShowAnswers(true);
   };
-
-  // Enhanced logic for view answers button availability
-  const canViewAnswers = isCompleted && !!attemptId;
-
-  console.log('🎯 Button State Check:');
-  console.log('  - Can View Answers:', canViewAnswers);
-  console.log('  - Button will show:', canViewAnswers ? 'مراجعة الإجابات' : 'غير متاح');
 
   return (
     <>
@@ -213,16 +212,10 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
             <div className="grid grid-cols-2 gap-2 w-full">
               <Button
                 onClick={handleViewAnswers}
-                disabled={!canViewAnswers}
-                variant={canViewAnswers ? "default" : "outline"}
-                className={`transition-all duration-200 ${
-                  canViewAnswers 
-                    ? 'bg-gradient-to-r from-blue-500 to-emerald-600 hover:from-blue-600 hover:to-emerald-700 text-white border-0' 
-                    : 'bg-gray-200 text-gray-400 border-gray-300 cursor-not-allowed'
-                }`}
+                className="bg-gradient-to-r from-blue-500 to-emerald-600 hover:from-blue-600 hover:to-emerald-700 text-white border-0 transition-all duration-200"
               >
                 <Eye className="w-4 h-4 ml-2" />
-                {canViewAnswers ? 'مراجعة الإجابات' : 'غير متاح'}
+                مراجعة الإجابات
               </Button>
               <Button
                 onClick={handleRetakeExam}
