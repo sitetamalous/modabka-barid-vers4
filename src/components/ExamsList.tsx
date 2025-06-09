@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useAllExams } from "@/hooks/useAllExams";
-import { useAllExamStatuses } from "@/hooks/useExamStatus";
+import { useAllExamStatuses } from "@/hooks/useAllExamStatuses";
 import { ExamCard } from "@/components/ExamCard";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, AlertCircle, BookOpen } from "lucide-react";
@@ -64,6 +64,8 @@ export const ExamsList = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {exams.map((exam) => {
           const examStatus = examStatuses?.get(exam.id) || null;
+          
+          console.log(`🔍 Exam ${exam.id} status from map:`, examStatus);
           
           return (
             <ExamCard

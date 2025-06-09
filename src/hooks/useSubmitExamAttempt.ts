@@ -42,7 +42,7 @@ export const useSubmitExamAttempt = () => {
         throw attemptError;
       }
 
-      console.log('✅ Attempt updated successfully');
+      console.log('✅ Attempt updated successfully with ID:', attemptId);
 
       // Filter out answers without selected option and prepare user answers
       const validAnswers = answers.filter(answer => 
@@ -72,16 +72,18 @@ export const useSubmitExamAttempt = () => {
           throw answersError;
         }
 
-        console.log('✅ All valid answers saved successfully');
+        console.log('✅ All valid answers saved successfully for attempt:', attemptId);
       } else {
-        console.log('⚠️ No valid answers to insert');
+        console.log('⚠️ No valid answers to insert for attempt:', attemptId);
       }
 
-      return { score, correctAnswers, totalQuestions: answers.length };
+      return { score, correctAnswers, totalQuestions: answers.length, attemptId };
     },
     onSuccess: (result) => {
       console.log('🎉 Exam submission completed successfully:', result);
+      // إبطال جميع الاستعلامات ذات الصلة لضمان تحديث البيانات
       queryClient.invalidateQueries({ queryKey: ['user-attempts'] });
+      queryClient.invalidateQueries({ queryKey: ['all-exam-statuses'] });
       queryClient.invalidateQueries({ queryKey: ['exam-stats'] });
       queryClient.invalidateQueries({ queryKey: ['exam-status'] });
       toast({
