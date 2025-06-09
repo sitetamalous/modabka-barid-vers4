@@ -28,9 +28,9 @@ export const ExamsList = () => {
   console.log('  - Exams count:', exams?.length || 0);
   console.log('  - Exam statuses map size:', examStatuses?.size || 0);
   
-  if (statusesLoading) {
+  if (!statusesLoading && examStatuses) {
     console.log('📊 Exam statuses map contents:');
-    examStatuses?.forEach((status, examId) => {
+    examStatuses.forEach((status, examId) => {
       console.log(`    Exam ${examId}:`, status);
     });
   }
