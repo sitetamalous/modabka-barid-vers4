@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,7 @@ interface ExamCardProps {
     completed_at?: string;
     correct_answers?: number;
     attempt_id?: string;
+    total_questions?: number;
   } | null;
   onStartExam: (examId: string) => void;
 }
@@ -50,12 +52,18 @@ interface ExamCardProps {
 export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
   const [resetDialog, setResetDialog] = useState(false);
   const [showAnswers, setShowAnswers] = useState(false);
-  const isCompleted = !!examStatus;
+  
+  // Enhanced checking for completed status
+  const isCompleted = !!(examStatus && examStatus.score !== undefined && examStatus.attempt_id);
   const score = examStatus?.score || 0;
+  const attemptId = examStatus?.attempt_id;
 
-  console.log('🔍 ExamCard rendered for exam:', exam.id);
-  console.log('🔍 Exam status:', examStatus);
-  console.log('🔍 Attempt ID available:', examStatus?.attempt_id);
+  console.log('🔍 ExamCard Debug Info:');
+  console.log('  - Exam ID:', exam.id);
+  console.log('  - Exam Status received:', examStatus);
+  console.log('  - Is Completed:', isCompleted);
+  console.log('  - Attempt ID:', attemptId);
+  console.log('  - Score:', score);
 
   const getScoreColor = (score: number) => {
     if (score >= 85) return "text-emerald-600";
@@ -71,14 +79,17 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
   };
 
   const handleStartExam = () => {
+    console.log('🚀 Starting new exam for:', exam.id);
     onStartExam(exam.id);
   };
 
   const handleRetakeExam = () => {
+    console.log('🔄 Retaking exam for:', exam.id);
     onStartExam(exam.id);
   };
 
   const handleCompleteReset = () => {
+    console.log('🗑️ Complete reset for exam:', exam.id);
     setResetDialog(true);
   };
 
@@ -88,30 +99,28 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
   };
 
   const handleViewAnswers = () => {
-    console.log('🔍 View answers clicked for exam:', exam.id);
-    console.log('🔍 Exam status:', examStatus);
-    console.log('🔍 Attempt ID:', examStatus?.attempt_id);
-
-    // ✅ تحقق محسن من وجود attempt_id
-    if (!examStatus?.attempt_id) {
-      console.error('❌ No attempt_id found for this exam');
-      console.error('❌ Full examStatus object:', examStatus);
-      alert("⚠️ لا يمكن عرض المراجعة، لم يتم العثور على معرف المحاولة");
+    console.log('👁️ View answers clicked');
+    console.log('  - Attempt ID:', attemptId);
+    console.log('  - Is Completed:', isCompleted);
+    
+    if (!isCompleted || !attemptId) {
+      console.error('❌ Cannot view answers - missing data:');
+      console.error('  - Is Completed:', isCompleted);
+      console.error('  - Attempt ID:', attemptId);
+      console.error('  - Full exam status:', examStatus);
       return;
     }
 
-    console.log('✅ Opening answers review for attempt:', examStatus.attempt_id);
+    console.log('✅ Opening detailed answer review for attempt:', attemptId);
     setShowAnswers(true);
   };
 
-  // تحسين التحقق من إمكانية عرض الإجابات
-  const isViewAnswersDisabled = !isCompleted || !examStatus?.attempt_id;
+  // Enhanced logic for view answers button availability
+  const canViewAnswers = isCompleted && !!attemptId;
 
-  console.log('🎯 View Answers button status:', {
-    isCompleted,
-    hasAttemptId: !!examStatus?.attempt_id,
-    isDisabled: isViewAnswersDisabled
-  });
+  console.log('🎯 Button State Check:');
+  console.log('  - Can View Answers:', canViewAnswers);
+  console.log('  - Button will show:', canViewAnswers ? 'مراجعة الإجابات' : 'غير متاح');
 
   return (
     <>
@@ -172,7 +181,7 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-emerald-600" />
                   <span className="text-gray-700">
-                    {examStatus.correct_answers}/{exam.total_questions} صحيح
+                    {examStatus.correct_answers}/{examStatus.total_questions || exam.total_questions} صحيح
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -204,16 +213,16 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
             <div className="grid grid-cols-2 gap-2 w-full">
               <Button
                 onClick={handleViewAnswers}
-                variant="outline"
-                disabled={isViewAnswersDisabled}
+                disabled={!canViewAnswers}
+                variant={canViewAnswers ? "default" : "outline"}
                 className={`transition-all duration-200 ${
-                  isViewAnswersDisabled 
-                    ? 'bg-gray-200 text-gray-400 border-gray-300 cursor-not-allowed' 
-                    : 'bg-gradient-to-r from-blue-500 to-emerald-600 hover:from-blue-600 hover:to-emerald-700 text-white border-0'
+                  canViewAnswers 
+                    ? 'bg-gradient-to-r from-blue-500 to-emerald-600 hover:from-blue-600 hover:to-emerald-700 text-white border-0' 
+                    : 'bg-gray-200 text-gray-400 border-gray-300 cursor-not-allowed'
                 }`}
               >
                 <Eye className="w-4 h-4 ml-2" />
-                {isViewAnswersDisabled ? 'غير متاح' : 'مراجعة الإجابات'}
+                {canViewAnswers ? 'مراجعة الإجابات' : 'غير متاح'}
               </Button>
               <Button
                 onClick={handleRetakeExam}
@@ -235,8 +244,8 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
         </CardFooter>
       </Card>
 
-      {/* Enhanced Dialog for viewing detailed answers */}
-      {showAnswers && examStatus?.attempt_id && (
+      {/* Dialog for viewing detailed answers */}
+      {showAnswers && attemptId && (
         <Dialog open={showAnswers} onOpenChange={setShowAnswers}>
           <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto" dir="rtl">
             <DialogHeader className="relative">
@@ -254,7 +263,7 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
             </DialogHeader>
             
             <div className="mt-4">
-              <DetailedAnswerReview attemptId={examStatus.attempt_id} />
+              <DetailedAnswerReview attemptId={attemptId} />
             </div>
             
             <div className="flex justify-center mt-6 pt-4 border-t">

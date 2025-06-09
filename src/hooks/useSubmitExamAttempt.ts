@@ -17,16 +17,24 @@ export const useSubmitExamAttempt = () => {
       answers: { questionId: string; selectedOptionId: string; isCorrect: boolean }[];
       timeTaken: number;
     }) => {
-      console.log('🚀 Starting exam submission...', { attemptId, answersCount: answers.length, timeTaken });
+      console.log('🚀 Starting exam submission process...', { 
+        attemptId, 
+        answersCount: answers.length, 
+        timeTaken 
+      });
       
       // Calculate score
       const correctAnswers = answers.filter(answer => answer.isCorrect).length;
       const score = Math.round((correctAnswers / answers.length) * 100);
       
-      console.log('📊 Calculated results:', { correctAnswers, totalQuestions: answers.length, score });
+      console.log('📊 Calculated results:', { 
+        correctAnswers, 
+        totalQuestions: answers.length, 
+        score 
+      });
 
       // Update attempt with completion details
-      const { error: attemptError } = await supabase
+      const { data: updatedAttempt, error: attemptError } = await supabase
         .from('user_attempts')
         .update({
           is_completed: true,
@@ -35,16 +43,18 @@ export const useSubmitExamAttempt = () => {
           correct_answers: correctAnswers,
           time_taken: timeTaken
         })
-        .eq('id', attemptId);
+        .eq('id', attemptId)
+        .select()
+        .single();
 
       if (attemptError) {
         console.error('❌ Error updating attempt:', attemptError);
         throw attemptError;
       }
 
-      console.log('✅ Attempt updated successfully with ID:', attemptId);
+      console.log('✅ Attempt updated successfully:', updatedAttempt);
 
-      // Filter out answers without selected option and prepare user answers
+      // Filter and prepare valid answers
       const validAnswers = answers.filter(answer => 
         answer.selectedOptionId && 
         answer.selectedOptionId.trim() !== '' && 
@@ -59,33 +69,50 @@ export const useSubmitExamAttempt = () => {
         is_correct: answer.isCorrect
       }));
 
-      console.log('💾 Inserting user answers:', userAnswers.length, 'out of', answers.length, 'total questions');
-      console.log('💾 Filtered out', answers.length - validAnswers.length, 'questions without answers');
+      console.log('💾 Preparing to insert user answers:', {
+        validAnswersCount: validAnswers.length,
+        totalAnswersReceived: answers.length,
+        filteredOut: answers.length - validAnswers.length
+      });
 
       if (userAnswers.length > 0) {
-        const { error: answersError } = await supabase
+        const { data: insertedAnswers, error: answersError } = await supabase
           .from('user_answers')
-          .insert(userAnswers);
+          .insert(userAnswers)
+          .select();
 
         if (answersError) {
           console.error('❌ Error inserting answers:', answersError);
           throw answersError;
         }
 
-        console.log('✅ All valid answers saved successfully for attempt:', attemptId);
+        console.log('✅ User answers saved successfully:', insertedAnswers?.length);
       } else {
         console.log('⚠️ No valid answers to insert for attempt:', attemptId);
       }
 
-      return { score, correctAnswers, totalQuestions: answers.length, attemptId };
+      const result = { 
+        score, 
+        correctAnswers, 
+        totalQuestions: answers.length, 
+        attemptId: updatedAttempt.id 
+      };
+
+      console.log('🎉 Submission completed successfully:', result);
+      return result;
     },
     onSuccess: (result) => {
-      console.log('🎉 Exam submission completed successfully:', result);
-      // إبطال جميع الاستعلامات ذات الصلة لضمان تحديث البيانات
+      console.log('🎉 Exam submission mutation completed successfully:', result);
+      
+      // Invalidate all related queries to ensure fresh data
       queryClient.invalidateQueries({ queryKey: ['user-attempts'] });
       queryClient.invalidateQueries({ queryKey: ['all-exam-statuses'] });
       queryClient.invalidateQueries({ queryKey: ['exam-stats'] });
       queryClient.invalidateQueries({ queryKey: ['exam-status'] });
+      queryClient.invalidateQueries({ queryKey: ['user-answers'] });
+      
+      console.log('🔄 All related queries invalidated');
+      
       toast({
         title: "تم تسليم الامتحان بنجاح",
         description: `حصلت على ${result.score}% - ${result.correctAnswers} إجابة صحيحة من ${result.totalQuestions}`,
