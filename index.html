@@ -1,10 +1,9 @@
-
 <!doctype html>
 <html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>منصة امتحانات بريد الجزائر - التحضير للامتحان الرسمي</title>
     <meta name="description" content="منصة شاملة للتحضير لامتحان مكلف بالزبائن في بريد الجزائر مع امتحانات تجريبية وأسئلة محدثة" />
     
@@ -17,14 +16,55 @@
     <meta name="theme-color" content="#10b981" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="امتحانات بريد الجزائر" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="امتحانات بريد الجزائر" />
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- iOS Icons -->
+    <link rel="apple-touch-icon" href="/icons/icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="/icons/icon-72x72.png" />
+    <link rel="apple-touch-icon" sizes="96x96" href="/icons/icon-96x96.png" />
+    <link rel="apple-touch-icon" sizes="128x128" href="/icons/icon-128x128.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144x144.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="384x384" href="/icons/icon-384x384.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512x512.png" />
+    
+    <!-- Windows Tiles -->
+    <meta name="msapplication-TileColor" content="#10b981" />
+    <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
     
     <!-- Open Graph Meta Tags -->
     <meta property="og:title" content="منصة امتحانات بريد الجزائر" />
     <meta property="og:description" content="استعد لامتحان مكلف بالزبائن مع امتحانات تجريبية شاملة" />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://algeria-post-exams.netlify.app" />
+    <meta property="og:image" content="/icons/icon-512x512.png" />
+    <meta property="og:locale" content="ar_DZ" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="منصة امتحانات بريد الجزائر" />
+    <meta name="twitter:description" content="استعد لامتحان مكلف بالزبائن مع امتحانات تجريبية شاملة" />
+    <meta name="twitter:image" content="/icons/icon-512x512.png" />
+    
+    <!-- Performance optimizations -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+    <link rel="preconnect" href="https://unmvdntddrkutnmmxzzg.supabase.co" />
+    
+    <!-- Security -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
     
     <style>
-      /* Loading screen */
+      /* Critical CSS for loading screen */
       .loading-screen {
         position: fixed;
         top: 0;
@@ -62,6 +102,7 @@
         font-size: 18px;
         font-weight: 600;
         margin-bottom: 10px;
+        font-family: 'Cairo', sans-serif;
       }
       
       .loading-bar {
@@ -85,10 +126,31 @@
         50% { width: 70%; }
         100% { width: 100%; }
       }
+      
+      /* Prevent flash of unstyled content */
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #ecfdf5 0%, #f0f9ff 100%);
+        overflow: hidden;
+      }
+      
+      #root {
+        min-height: 100vh;
+      }
+      
+      /* Safe area support */
+      @supports (padding: max(0px)) {
+        body {
+          padding-left: max(0px, env(safe-area-inset-left));
+          padding-right: max(0px, env(safe-area-inset-right));
+        }
+      }
     </style>
   </head>
   <body>
-    <!-- Loading Screen -->
+    <!-- Initial Loading Screen -->
     <div id="loading-screen" class="loading-screen">
       <div class="loading-logo">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -106,7 +168,7 @@
     <script type="module" src="/src/main.tsx"></script>
     
     <script>
-      // Hide loading screen when page loads
+      // Hide initial loading screen when React app loads
       window.addEventListener('load', function() {
         setTimeout(function() {
           const loadingScreen = document.getElementById('loading-screen');
@@ -114,9 +176,39 @@
             loadingScreen.style.opacity = '0';
             setTimeout(function() {
               loadingScreen.style.display = 'none';
+              document.body.style.overflow = 'auto';
             }, 500);
           }
-        }, 1000);
+        }, 1500);
+      });
+      
+      // Register service worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js')
+            .then(function(registration) {
+              console.log('SW registered: ', registration);
+            })
+            .catch(function(registrationError) {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+      
+      // Handle install prompt
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        console.log('Install prompt ready');
+      });
+      
+      // Performance monitoring
+      window.addEventListener('load', function() {
+        if ('performance' in window) {
+          const perfData = performance.getEntriesByType('navigation')[0];
+          console.log('Page load time:', perfData.loadEventEnd - perfData.loadEventStart, 'ms');
+        }
       });
     </script>
   </body>
