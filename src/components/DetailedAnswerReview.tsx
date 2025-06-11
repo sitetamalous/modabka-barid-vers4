@@ -76,7 +76,7 @@ export const DetailedAnswerReview = ({ attemptId }: DetailedAnswerReviewProps) =
   const scorePercentage = Math.round((correctAnswers / totalQuestions) * 100);
 
   return (
-    <div className="space-y-6 px-4 sm:px-6 md:px-8 lg:px-0 max-w-7xl mx-auto" dir="rtl">
+    <div className="space-y-6 px-4 sm:px-6 max-w-full w-full mx-auto" dir="rtl">
       {/* Enhanced Summary with Performance Analysis */}
       <div className="p-6 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-xl border-2 border-emerald-200 shadow-lg">
         <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between mb-6 gap-4 sm:gap-0">
