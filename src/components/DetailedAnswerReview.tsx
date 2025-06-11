@@ -13,8 +13,7 @@ import {
   Loader2,
   Award,
   Target,
-  BookOpen,
-  Clock
+  BookOpen
 } from 'lucide-react';
 
 interface DetailedAnswerReviewProps {
@@ -255,7 +254,7 @@ export const DetailedAnswerReview = ({ attemptId }: DetailedAnswerReviewProps) =
 
                 {/* Expanded Content - Shows all options with clear indicators */}
                 {isExpanded && (
-                  <div className="mt-6 pr-0 md:pr-16 space-y-4 md:space-y-6 border-t border-gray-200 pt-4 md:pt-6">
+                  <div className="mt-6 px-4 md:pr-16 space-y-4 md:space-y-6 border-t border-gray-200 pt-4 md:pt-6">
                     {/* All Answer Options with enhanced visual indicators */}
                     <div className="space-y-3 md:space-y-4">
                       <h6 className="font-bold text-gray-900 text-base md:text-lg flex items-center gap-2">
