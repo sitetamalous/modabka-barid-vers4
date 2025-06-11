@@ -47,7 +47,7 @@ export const DetailedAnswerReview = ({ attemptId }: DetailedAnswerReviewProps) =
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 px-4">
+      <div className="flex flex-col items-center justify-center py-12 px-4 overflow-x-hidden">
         <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-2xl flex items-center justify-center mb-4 animate-pulse">
           <BookOpen className="w-8 h-8 text-white" />
         </div>
@@ -62,7 +62,7 @@ export const DetailedAnswerReview = ({ attemptId }: DetailedAnswerReviewProps) =
 
   if (!userAnswers || userAnswers.length === 0) {
     return (
-      <div className="text-center py-12 px-4">
+      <div className="text-center py-12 px-4 overflow-x-hidden">
         <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
           <AlertCircle className="w-8 h-8 text-gray-400" />
         </div>
@@ -77,17 +77,16 @@ export const DetailedAnswerReview = ({ attemptId }: DetailedAnswerReviewProps) =
   const scorePercentage = Math.round((correctAnswers / totalQuestions) * 100);
 
   return (
-    <div className="space-y-6 px-4 sm:px-6 w-full max-w-full overflow-x-hidden" dir="rtl">
-      {/* Enhanced Summary with Performance Analysis */}
+    <div className="w-full max-w-full px-4 sm:px-6 mx-auto overflow-x-hidden space-y-6" dir="rtl">
       <div className="p-6 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-xl border-2 border-emerald-200 shadow-lg">
-        <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between mb-6 gap-4 sm:gap-0">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4">
           <div className="flex items-center gap-4 w-full sm:w-auto">
             {scorePercentage >= 70 ? (
-              <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center flex-shrink-0">
+              <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center">
                 <Award className="w-8 h-8 text-white" />
               </div>
             ) : (
-              <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-2xl flex items-center justify-center flex-shrink-0">
+              <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-2xl flex items-center justify-center">
                 <Target className="w-8 h-8 text-white" />
               </div>
             )}
@@ -100,31 +99,17 @@ export const DetailedAnswerReview = ({ attemptId }: DetailedAnswerReviewProps) =
               </p>
             </div>
           </div>
-
-          <div className="flex gap-3 w-full sm:w-auto justify-center">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={expandAll} 
-              className="text-sm min-w-[6rem] flex items-center justify-center gap-1"
-            >
-              <ChevronDown className="w-4 h-4 ml-1" />
-              توسيع الكل
+          <div className="flex flex-wrap gap-3 justify-center sm:justify-end w-full sm:w-auto">
+            <Button variant="outline" size="sm" onClick={expandAll} className="text-sm min-w-[6rem]">
+              <ChevronDown className="w-4 h-4 ml-1" /> توسيع الكل
             </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={collapseAll} 
-              className="text-sm min-w-[6rem] flex items-center justify-center gap-1"
-            >
-              <ChevronUp className="w-4 h-4 ml-1" />
-              طي الكل
+            <Button variant="outline" size="sm" onClick={collapseAll} className="text-sm min-w-[6rem]">
+              <ChevronUp className="w-4 h-4 ml-1" /> طي الكل
             </Button>
           </div>
         </div>
 
-        {/* Performance indicators */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
           <div className="text-center p-4 bg-emerald-100 rounded-xl border border-emerald-200">
             <CheckCircle className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
             <div className="text-2xl font-bold text-emerald-700">{correctAnswers}</div>
@@ -142,19 +127,18 @@ export const DetailedAnswerReview = ({ attemptId }: DetailedAnswerReviewProps) =
           </div>
         </div>
 
-        {/* Performance message */}
-        <div className={`p-4 rounded-xl border-2 ${
-          scorePercentage >= 70 
-            ? 'bg-emerald-100 border-emerald-300 text-emerald-800' 
+        <div className={`mt-4 p-4 rounded-xl border-2 ${
+          scorePercentage >= 70
+            ? 'bg-emerald-100 border-emerald-300 text-emerald-800'
             : 'bg-yellow-100 border-yellow-300 text-yellow-800'
         }`}>
-          <div className="font-bold text-center text-lg whitespace-normal leading-snug px-2 sm:px-0">
-            {scorePercentage >= 90 && "أداء ممتاز! تهانينا على هذا الإنجاز الرائع"}
-            {scorePercentage >= 80 && scorePercentage < 90 && "أداء جيد جداً! استمر في التميز"}
-            {scorePercentage >= 70 && scorePercentage < 80 && "أداء جيد، يمكن التحسين أكثر"}
-            {scorePercentage >= 60 && scorePercentage < 70 && "أداء مقبول، يحتاج مراجعة"}
-            {scorePercentage < 60 && "يحتاج إلى مراجعة وتدريب إضافي"}
-          </div>
+          <p className="text-center font-bold text-lg">
+            {scorePercentage >= 90 && "🏆 أداء ممتاز! تهانينا على هذا الإنجاز الرائع"}
+            {scorePercentage >= 80 && scorePercentage < 90 && "🌟 أداء جيد جداً! استمر في التميز"}
+            {scorePercentage >= 70 && scorePercentage < 80 && "✅ أداء جيد، يمكن التحسين أكثر"}
+            {scorePercentage >= 60 && scorePercentage < 70 && "⚠️ أداء مقبول، يحتاج مراجعة"}
+            {scorePercentage < 60 && "📚 يحتاج إلى مراجعة وتدريب إضافي"}
+          </p>
         </div>
       </div>
 
