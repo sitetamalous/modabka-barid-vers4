@@ -3,17 +3,18 @@ import { useUserAnswers } from '@/hooks/useUserAnswers';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
-  CheckCircle, 
-  XCircle, 
-  AlertCircle, 
+import {
+  CheckCircle,
+  XCircle,
+  AlertCircle,
   Lightbulb,
   ChevronDown,
   ChevronUp,
   Loader2,
   Award,
   Target,
-  BookOpen
+  BookOpen,
+  Clock
 } from 'lucide-react';
 
 interface DetailedAnswerReviewProps {
@@ -46,7 +47,7 @@ export const DetailedAnswerReview = ({ attemptId }: DetailedAnswerReviewProps) =
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-12">
+      <div className="flex flex-col items-center justify-center py-12 px-4">
         <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-2xl flex items-center justify-center mb-4 animate-pulse">
           <BookOpen className="w-8 h-8 text-white" />
         </div>
@@ -61,7 +62,7 @@ export const DetailedAnswerReview = ({ attemptId }: DetailedAnswerReviewProps) =
 
   if (!userAnswers || userAnswers.length === 0) {
     return (
-      <div className="text-center py-12">
+      <div className="text-center py-12 px-4">
         <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
           <AlertCircle className="w-8 h-8 text-gray-400" />
         </div>
@@ -76,7 +77,7 @@ export const DetailedAnswerReview = ({ attemptId }: DetailedAnswerReviewProps) =
   const scorePercentage = Math.round((correctAnswers / totalQuestions) * 100);
 
   return (
-    <div className="space-y-6 px-4 sm:px-6 max-w-full w-full mx-auto" dir="rtl">
+    <div className="space-y-6 px-4 sm:px-6 w-full max-w-full overflow-x-hidden" dir="rtl">
       {/* Enhanced Summary with Performance Analysis */}
       <div className="p-6 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-xl border-2 border-emerald-200 shadow-lg">
         <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between mb-6 gap-4 sm:gap-0">
