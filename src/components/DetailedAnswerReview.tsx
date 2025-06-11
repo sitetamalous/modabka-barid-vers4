@@ -13,8 +13,7 @@ import {
   Loader2,
   Award,
   Target,
-  BookOpen,
-  Clock
+  BookOpen
 } from 'lucide-react';
 
 interface DetailedAnswerReviewProps {
@@ -92,7 +91,7 @@ export const DetailedAnswerReview = ({ attemptId }: DetailedAnswerReviewProps) =
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <h4 className="text-2xl font-bold text-gray-900 mb-1 leading-tight">
+              <h4 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 leading-tight">
                 النتيجة النهائية: {scorePercentage}%
               </h4>
               <p className="text-gray-600 text-lg truncate">
@@ -221,7 +220,7 @@ export const DetailedAnswerReview = ({ attemptId }: DetailedAnswerReviewProps) =
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1 sm:mb-3">
                       <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
-                        <h5 className="font-bold text-xl sm:text-2xl text-gray-900 truncate max-w-[220px] sm:max-w-none">
+                        <h5 className="font-bold text-lg sm:text-xl text-gray-900 truncate max-w-[220px] sm:max-w-none">
                           السؤال {index + 1}
                         </h5>
                         <Badge 
@@ -282,7 +281,7 @@ export const DetailedAnswerReview = ({ attemptId }: DetailedAnswerReviewProps) =
 
                 {/* Expanded Content - Shows all options with clear indicators */}
                 {isExpanded && (
-                  <div className="mt-8 pr-0 sm:pr-16 space-y-6 border-t border-gray-200 pt-6">
+                  <div className="mt-4 pr-0 sm:pr-16 space-y-6 border-t border-gray-200 pt-6">
                     {/* All Answer Options with enhanced visual indicators */}
                     <div className="space-y-4">
                       <h6 className="font-bold text-gray-900 text-lg flex items-center gap-2 mb-4">
@@ -378,7 +377,7 @@ export const DetailedAnswerReview = ({ attemptId }: DetailedAnswerReviewProps) =
                             {correctOption && (
                               <div className="mt-4 p-3 bg-yellow-100 rounded-lg border border-yellow-300 max-w-full break-words">
                                 <span className="font-bold text-yellow-900 text-lg">
-                                  تذكر: الإجابة الصحيحة هي "{correctOption.option_text}"
+                                  تذكر: الإجابة الصحيحة هي &quot;{correctOption.option_text}&quot;
                                 </span>
                               </div>
                             )}
