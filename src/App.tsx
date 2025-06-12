@@ -9,17 +9,24 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Results from "./pages/Results";
 import NotFound from "./pages/NotFound";
-import { LoadingScreen } from "./components/LoadingScreen";
+import { SplashScreenEnhanced } from "./components/SplashScreenEnhanced";
 import { PWAInstaller } from "./components/PWAInstaller";
+import { PWAUpdatePrompt } from "./components/PWAUpdatePrompt";
 import { OfflineIndicator } from "./components/OfflineIndicator";
+import { OfflineFallback } from "./components/OfflineFallback";
 import { registerServiceWorker } from "./utils/pwaUtils";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
+      retry: (failureCount, error: any) => {
+        // Don't retry on network errors when offline
+        if (!navigator.onLine) return false;
+        return failureCount < 2;
+      },
       refetchOnWindowFocus: false,
       staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
     },
   },
 });
@@ -27,16 +34,47 @@ const queryClient = new QueryClient({
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAppReady, setIsAppReady] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [showOfflineFallback, setShowOfflineFallback] = useState(false);
 
   useEffect(() => {
-    // Register service worker
+    // Register enhanced service worker
     registerServiceWorker();
 
-    // Simulate app initialization
+    // Handle online/offline status
+    const handleOnline = () => {
+      setIsOnline(true);
+      setShowOfflineFallback(false);
+    };
+    
+    const handleOffline = () => {
+      setIsOnline(false);
+      // Show offline fallback after a delay to avoid flashing
+      setTimeout(() => {
+        if (!navigator.onLine) {
+          setShowOfflineFallback(true);
+        }
+      }, 3000);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // App initialization
     const initializeApp = async () => {
       try {
-        // Perform any necessary initialization
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Simulate app initialization with realistic timing
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Check if we're in standalone mode (PWA)
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                            (window.navigator as any).standalone ||
+                            document.referrer.includes('android-app://');
+        
+        if (isStandalone) {
+          console.log('App running in PWA mode');
+        }
+        
         setIsAppReady(true);
       } catch (error) {
         console.error('App initialization failed:', error);
@@ -45,18 +83,27 @@ const App = () => {
     };
 
     initializeApp();
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, []);
 
   const handleLoadingComplete = () => {
     setIsLoading(false);
   };
 
+  // Show offline fallback if we're offline and the page failed to load
+  if (!isOnline && showOfflineFallback) {
+    return <OfflineFallback />;
+  }
+
   if (isLoading) {
     return (
-      <LoadingScreen 
+      <SplashScreenEnhanced 
         onComplete={handleLoadingComplete}
-        duration={2500}
-        showProgress={true}
+        duration={3000}
       />
     );
   }
@@ -68,6 +115,7 @@ const App = () => {
         <Sonner />
         <OfflineIndicator />
         <PWAInstaller />
+        <PWAUpdatePrompt />
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<Auth />} />
@@ -81,7 +129,6 @@ const App = () => {
                 <Index />
               </AuthLayout>
             } />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

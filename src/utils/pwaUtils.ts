@@ -1,10 +1,11 @@
-// PWA utility functions
+// Enhanced PWA utility functions with better error handling and features
 
 export const registerServiceWorker = async (): Promise<ServiceWorkerRegistration | null> => {
   if ('serviceWorker' in navigator) {
     try {
       const registration = await navigator.serviceWorker.register('/sw.js', {
         scope: '/',
+        updateViaCache: 'none', // Always check for updates
       });
       
       console.log('Service Worker registered successfully:', registration);
@@ -15,14 +16,19 @@ export const registerServiceWorker = async (): Promise<ServiceWorkerRegistration
         if (newWorker) {
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // New content is available, prompt user to refresh
-              if (confirm('تحديث جديد متاح. هل تريد إعادة تحميل الصفحة؟')) {
-                window.location.reload();
-              }
+              // New content is available, notify the app
+              window.dispatchEvent(new CustomEvent('sw-update-available'));
             }
           });
         }
       });
+      
+      // Check for updates every 60 seconds when the app is active
+      setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          registration.update();
+        }
+      }, 60000);
       
       return registration;
     } catch (error) {
@@ -73,7 +79,7 @@ export const isStandalone = (): boolean => {
 export const isPWAInstallable = (): boolean => {
   return 'serviceWorker' in navigator && 
          !isStandalone() && 
-         window.location.protocol === 'https:';
+         (window.location.protocol === 'https:' || window.location.hostname === 'localhost');
 };
 
 export const getInstallPrompt = (): Promise<Event | null> => {
@@ -86,11 +92,11 @@ export const getInstallPrompt = (): Promise<Event | null> => {
     
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     
-    // Timeout after 5 seconds
+    // Timeout after 10 seconds
     setTimeout(() => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       resolve(null);
-    }, 5000);
+    }, 10000);
   });
 };
 
@@ -105,11 +111,15 @@ export const requestNotificationPermission = async (): Promise<NotificationPermi
 
 export const showNotification = (title: string, options?: NotificationOptions): void => {
   if ('Notification' in window && Notification.permission === 'granted') {
-    new Notification(title, {
+    const notification = new Notification(title, {
       icon: '/icons/icon-192x192.png',
       badge: '/icons/icon-72x72.png',
+      vibrate: [200, 100, 200],
       ...options,
     });
+    
+    // Auto-close after 5 seconds
+    setTimeout(() => notification.close(), 5000);
   }
 };
 
@@ -121,7 +131,7 @@ export const addToHomeScreen = (): void => {
   }
 };
 
-// Cache management utilities
+// Enhanced cache management utilities
 export const clearAppCache = async (): Promise<void> => {
   if ('caches' in window) {
     try {
@@ -130,6 +140,26 @@ export const clearAppCache = async (): Promise<void> => {
         cacheNames.map(cacheName => caches.delete(cacheName))
       );
       console.log('App cache cleared');
+      
+      // Also clear localStorage and sessionStorage
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Clear IndexedDB if needed
+      if ('indexedDB' in window) {
+        const databases = await indexedDB.databases();
+        await Promise.all(
+          databases.map(db => {
+            if (db.name) {
+              return new Promise((resolve, reject) => {
+                const deleteReq = indexedDB.deleteDatabase(db.name!);
+                deleteReq.onsuccess = () => resolve(undefined);
+                deleteReq.onerror = () => reject(deleteReq.error);
+              });
+            }
+          })
+        );
+      }
     } catch (error) {
       console.error('Failed to clear cache:', error);
     }
@@ -148,11 +178,13 @@ export const getCacheSize = async (): Promise<number> => {
   return 0;
 };
 
-// Network status utilities
+// Enhanced network status utilities
 export const getNetworkStatus = (): {
   isOnline: boolean;
   connectionType?: string;
   effectiveType?: string;
+  downlink?: number;
+  rtt?: number;
 } => {
   const connection = (navigator as any).connection || 
                     (navigator as any).mozConnection || 
@@ -162,6 +194,8 @@ export const getNetworkStatus = (): {
     isOnline: navigator.onLine,
     connectionType: connection?.type,
     effectiveType: connection?.effectiveType,
+    downlink: connection?.downlink,
+    rtt: connection?.rtt,
   };
 };
 
@@ -176,5 +210,86 @@ export const waitForOnline = (): Promise<void> => {
       };
       window.addEventListener('online', handleOnline);
     }
+  });
+};
+
+// Performance monitoring
+export const measurePerformance = (): {
+  loadTime: number;
+  domContentLoaded: number;
+  firstPaint: number;
+  firstContentfulPaint: number;
+} => {
+  const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+  const paint = performance.getEntriesByType('paint');
+  
+  return {
+    loadTime: navigation.loadEventEnd - navigation.loadEventStart,
+    domContentLoaded: navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart,
+    firstPaint: paint.find(entry => entry.name === 'first-paint')?.startTime || 0,
+    firstContentfulPaint: paint.find(entry => entry.name === 'first-contentful-paint')?.startTime || 0,
+  };
+};
+
+// App update utilities
+export const skipWaiting = async (): Promise<void> => {
+  if ('serviceWorker' in navigator) {
+    const registration = await navigator.serviceWorker.getRegistration();
+    if (registration?.waiting) {
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+    }
+  }
+};
+
+export const reloadApp = (): void => {
+  window.location.reload();
+};
+
+// Device capabilities detection
+export const getDeviceCapabilities = () => {
+  return {
+    standalone: isStandalone(),
+    installable: isPWAInstallable(),
+    notifications: 'Notification' in window,
+    serviceWorker: 'serviceWorker' in navigator,
+    storage: 'storage' in navigator,
+    indexedDB: 'indexedDB' in window,
+    webShare: 'share' in navigator,
+    clipboard: 'clipboard' in navigator,
+    geolocation: 'geolocation' in navigator,
+    camera: 'mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices,
+    vibration: 'vibrate' in navigator,
+    battery: 'getBattery' in navigator,
+    connection: 'connection' in navigator || 'mozConnection' in navigator || 'webkitConnection' in navigator,
+  };
+};
+
+// App installation tracking
+export const trackInstallation = () => {
+  // Track when app is installed
+  window.addEventListener('appinstalled', () => {
+    console.log('PWA was installed');
+    // You can send analytics here
+  });
+  
+  // Track when install prompt is shown
+  window.addEventListener('beforeinstallprompt', () => {
+    console.log('Install prompt shown');
+    // You can send analytics here
+  });
+};
+
+// Initialize PWA utilities
+export const initializePWA = () => {
+  trackInstallation();
+  
+  // Log device capabilities
+  console.log('Device capabilities:', getDeviceCapabilities());
+  
+  // Log performance metrics after load
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      console.log('Performance metrics:', measurePerformance());
+    }, 1000);
   });
 };
