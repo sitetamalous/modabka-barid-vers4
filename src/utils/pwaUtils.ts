@@ -1,6 +1,14 @@
 // Enhanced PWA utility functions with better error handling and features
 
 export const registerServiceWorker = async (): Promise<ServiceWorkerRegistration | null> => {
+  // Check if running in StackBlitz or WebContainer environment
+  if (window.location.hostname.includes('stackblitz.io') || 
+      window.location.hostname.includes('webcontainer.io') ||
+      window.location.hostname.includes('bolt.new')) {
+    console.log('Service Workers are not supported in this environment (StackBlitz/WebContainer)');
+    return null;
+  }
+
   if ('serviceWorker' in navigator) {
     try {
       const registration = await navigator.serviceWorker.register('/sw.js', {
