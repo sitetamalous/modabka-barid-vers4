@@ -9,8 +9,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { 
   Play, 
   Clock, 
-  Users, 
-  CheckCircle, 
   Target,
   Trophy,
   RotateCcw,
@@ -18,7 +16,8 @@ import {
   Calendar,
   MoreVertical,
   Eye,
-  X
+  X,
+  CheckCircle
 } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
@@ -55,7 +54,6 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
   const [showAnswers, setShowAnswers] = useState(false);
   
   const isCompleted = examStatus?.is_completed === true;
-  
   const score = examStatus?.score || 0;
   const attemptId = examStatus?.attempt_id;
 
@@ -95,15 +93,15 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
 
   return (
     <>
-      <Card className="h-full bg-white shadow-xl hover:shadow-2xl transition-all duration-300 border-0 group">
-        <CardHeader className="pb-4">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <h3 className="text-3xl font-bold text-gray-900 mb-3 group-hover:text-emerald-600 transition-colors">
+      <Card className="h-full bg-white/95 backdrop-blur-sm shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 group overflow-hidden">
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 group-hover:text-emerald-600 transition-colors line-clamp-2">
                 {exam.title}
               </h3>
               {exam.description && (
-                <p className="text-gray-600 text-xl leading-relaxed line-clamp-2">
+                <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">
                   {exam.description}
                 </p>
               )}
@@ -112,22 +110,22 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
             {isCompleted && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-12 w-12 p-0">
-                    <MoreVertical className="h-6 w-6" />
+                  <Button variant="ghost" size="icon" className="h-8 w-8 p-0 shrink-0">
+                    <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="text-xl">
-                  <DropdownMenuItem onClick={handleRetakeExam} className="py-3">
-                    <RotateCcw className="w-6 h-6 ml-3" />
+                <DropdownMenuContent align="end" className="text-sm">
+                  <DropdownMenuItem onClick={handleRetakeExam} className="py-2">
+                    <RotateCcw className="w-4 h-4 ml-2" />
                     إعادة الاختبار
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
                     onClick={handleCompleteReset}
-                    className="text-red-600 focus:text-red-600 py-3"
+                    className="text-red-600 focus:text-red-600 py-2"
                   >
-                    <Trash2 className="w-6 h-6 ml-3" />
-                    مسح البيانات وإعادة التشغيل
+                    <Trash2 className="w-4 h-4 ml-2" />
+                    مسح البيانات
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -135,28 +133,28 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
           </div>
 
           {isCompleted && (
-            <div className="mt-5 p-5 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-xl border-2 border-emerald-200">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <Trophy className="w-6 h-6 text-emerald-600" />
-                  <span className="font-semibold text-emerald-800 text-xl">مكتمل</span>
+            <div className="mt-3 p-3 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg border border-emerald-200">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-emerald-600" />
+                  <span className="font-semibold text-emerald-800 text-sm">مكتمل</span>
                 </div>
-                <Badge variant={getScoreBadgeVariant(score)} className="text-xl font-bold px-4 py-2">
+                <Badge variant={getScoreBadgeVariant(score)} className="text-xs font-bold">
                   {score}%
                 </Badge>
               </div>
               
-              <Progress value={score} className="mb-4 h-3" />
+              <Progress value={score} className="mb-3 h-2" />
               
-              <div className="grid grid-cols-2 gap-5 text-xl">
-                <div className="flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-emerald-600" />
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-3 h-3 text-emerald-600" />
                   <span className="text-gray-700">
-                    {examStatus?.correct_answers}/{examStatus?.total_questions || exam.total_questions} صحيح
+                    {examStatus?.correct_answers}/{examStatus?.total_questions || exam.total_questions}
                   </span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Calendar className="w-5 h-5 text-blue-600" />
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-3 h-3 text-blue-600" />
                   <span className="text-gray-700">
                     {examStatus?.completed_at && format(new Date(examStatus.completed_at), 'dd/MM', { locale: ar })}
                   </span>
@@ -166,14 +164,14 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
           )}
         </CardHeader>
 
-        <CardContent className="pb-4">
-          <div className="grid grid-cols-2 gap-5 text-xl">
-            <div className="flex items-center gap-3 text-gray-600">
-              <Target className="w-5 h-5" />
+        <CardContent className="pb-3">
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="flex items-center gap-2 text-gray-600">
+              <Target className="w-4 h-4" />
               <span>{exam.total_questions} سؤال</span>
             </div>
-            <div className="flex items-center gap-3 text-gray-600">
-              <Clock className="w-5 h-5" />
+            <div className="flex items-center gap-2 text-gray-600">
+              <Clock className="w-4 h-4" />
               <span>{exam.duration_minutes} دقيقة</span>
             </div>
           </div>
@@ -181,33 +179,34 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
 
         <CardFooter className="pt-0">
           {isCompleted ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-              <Button
-                onClick={handleReviewExam}
-                disabled={!attemptId}
-                className={`${
-                  attemptId 
-                    ? "bg-gradient-to-r from-blue-500 to-emerald-600 hover:from-blue-600 hover:to-emerald-700 text-white" 
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                } border-0 transition-all duration-200 text-xl py-6`}
-              >
-                <Eye className="w-6 h-6 ml-3" />
-                {attemptId ? 'مراجعة الإجابات' : 'غير متاح'}
-              </Button>
-              <Button
-                onClick={handleRetakeExam}
-                className="bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 transition-all duration-200 text-xl py-6"
-              >
-                <RotateCcw className="w-6 h-6 ml-3" />
-                إعادة الاختبار
-              </Button>
+            <div className="grid grid-cols-1 gap-2 w-full">
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  onClick={handleReviewExam}
+                  disabled={!attemptId}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                >
+                  <Eye className="w-3 h-3 ml-1" />
+                  {attemptId ? 'مراجعة' : 'غير متاح'}
+                </Button>
+                <Button
+                  onClick={handleRetakeExam}
+                  size="sm"
+                  className="bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-xs"
+                >
+                  <RotateCcw className="w-3 h-3 ml-1" />
+                  إعادة
+                </Button>
+              </div>
             </div>
           ) : (
             <Button 
               onClick={handleStartExam}
-              className="w-full bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 transition-all duration-200 text-xl py-6"
+              className="w-full bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 transition-all duration-200 text-sm py-2"
             >
-              <Play className="w-6 h-6 ml-3" />
+              <Play className="w-4 h-4 ml-2" />
               بدء الامتحان
             </Button>
           )}
@@ -216,32 +215,32 @@ export const ExamCard = ({ exam, examStatus, onStartExam }: ExamCardProps) => {
 
       {showAnswers && attemptId && (
         <Dialog open={showAnswers} onOpenChange={setShowAnswers}>
-          <DialogContent className="max-w-6xl w-[95vw] max-h-[90vh] overflow-y-auto p-0" dir="rtl">
-            <DialogHeader className="relative p-6 bg-gradient-to-r from-emerald-50 to-blue-50 border-b-2 border-emerald-200">
-              <DialogTitle className="text-3xl text-center pr-12">
-                مراجعة إجابات الاختبار - {exam.title}
+          <DialogContent className="max-w-[95vw] w-full max-h-[90vh] overflow-y-auto p-0 sm:max-w-4xl" dir="rtl">
+            <DialogHeader className="relative p-4 bg-gradient-to-r from-emerald-50 to-blue-50 border-b border-emerald-200">
+              <DialogTitle className="text-lg sm:text-xl text-center pr-8">
+                مراجعة إجابات - {exam.title}
               </DialogTitle>
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute left-6 top-6 h-12 w-12"
+                className="absolute left-4 top-4 h-8 w-8"
                 onClick={() => setShowAnswers(false)}
               >
-                <X className="h-6 w-6" />
+                <X className="h-4 w-4" />
               </Button>
             </DialogHeader>
             
-            <div className="mt-0">
+            <div className="p-0">
               <DetailedAnswerReview attemptId={attemptId} />
             </div>
             
-            <div className="flex justify-center mt-6 pt-5 border-t p-6">
+            <div className="flex justify-center p-4 border-t">
               <Button 
                 onClick={() => setShowAnswers(false)} 
                 variant="outline"
-                className="px-10 py-6 text-xl"
+                className="px-6 py-2 text-sm"
               >
-                إغلاق المراجعة
+                إغلاق
               </Button>
             </div>
           </DialogContent>
