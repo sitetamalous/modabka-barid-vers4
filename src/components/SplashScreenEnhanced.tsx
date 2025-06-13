@@ -7,6 +7,14 @@ interface SplashScreenEnhancedProps {
   duration?: number;
 }
 
+const LOADING_STEPS = [
+  { text: 'تحميل التطبيق...', progress: 20 },
+  { text: 'إعداد البيانات...', progress: 40 },
+  { text: 'تحضير الواجهة...', progress: 60 },
+  { text: 'التحقق من الاتصال...', progress: 80 },
+  { text: 'اكتمل التحميل!', progress: 100 }
+];
+
 export const SplashScreenEnhanced = ({ 
   onComplete, 
   duration = 3000 
@@ -15,22 +23,14 @@ export const SplashScreenEnhanced = ({
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
 
-  const loadingSteps = [
-    { text: 'تحميل التطبيق...', progress: 20 },
-    { text: 'إعداد البيانات...', progress: 40 },
-    { text: 'تحضير الواجهة...', progress: 60 },
-    { text: 'التحقق من الاتصال...', progress: 80 },
-    { text: 'اكتمل التحميل!', progress: 100 }
-  ];
-
   useEffect(() => {
-    const stepDuration = duration / loadingSteps.length;
+    const stepDuration = duration / LOADING_STEPS.length;
     
     const interval = setInterval(() => {
       setCurrentStep((prev) => {
         const next = prev + 1;
-        if (next < loadingSteps.length) {
-          setProgress(loadingSteps[next].progress);
+        if (next < LOADING_STEPS.length) {
+          setProgress(LOADING_STEPS[next].progress);
           return next;
         } else {
           clearInterval(interval);
@@ -161,7 +161,7 @@ export const SplashScreenEnhanced = ({
                 exit={{ opacity: 0, x: -20 }}
                 className="text-lg font-medium text-gray-700"
               >
-                {loadingSteps[currentStep]?.text}
+                {LOADING_STEPS[currentStep]?.text}
               </motion.div>
 
               {/* Progress Bar */}
@@ -214,7 +214,7 @@ export const SplashScreenEnhanced = ({
                   </motion.div>
                 ))}
               </motion.div>
-            </div>
+            </motion.div>
           </div>
 
           {/* Bottom Branding */}
