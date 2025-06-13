@@ -25,9 +25,6 @@ export default defineConfig(({ mode }) => ({
                 maxEntries: 100,
                 maxAgeSeconds: 60 * 60 * 24, // 24 hours
               },
-              cacheKeyWillBeUsed: async ({ request }) => {
-                return `${request.url}?${Date.now()}`;
-              },
             },
           },
           {
@@ -54,7 +51,7 @@ export default defineConfig(({ mode }) => ({
           },
         ],
       },
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      includeAssets: ['favicon.ico'],
       manifest: {
         name: 'منصة امتحانات بريد الجزائر - التحضير للامتحان الرسمي',
         short_name: 'امتحانات بريد الجزائر',
@@ -118,29 +115,6 @@ export default defineConfig(({ mode }) => ({
             purpose: 'maskable any'
           }
         ],
-        screenshots: [
-          {
-            src: 'screenshots/mobile-home.png',
-            sizes: '390x844',
-            type: 'image/png',
-            form_factor: 'narrow',
-            label: 'الصفحة الرئيسية للمنصة'
-          },
-          {
-            src: 'screenshots/mobile-exam.png',
-            sizes: '390x844',
-            type: 'image/png',
-            form_factor: 'narrow',
-            label: 'صفحة الامتحان'
-          },
-          {
-            src: 'screenshots/desktop-dashboard.png',
-            sizes: '1920x1080',
-            type: 'image/png',
-            form_factor: 'wide',
-            label: 'لوحة التحكم - سطح المكتب'
-          }
-        ],
         shortcuts: [
           {
             name: 'بدء امتحان جديد',
@@ -167,16 +141,6 @@ export default defineConfig(({ mode }) => ({
                 type: 'image/png'
               }
             ]
-          }
-        ],
-        prefer_related_applications: false,
-        edge_side_panel: {
-          preferred_width: 400
-        },
-        protocol_handlers: [
-          {
-            protocol: 'web+algeriapost',
-            url: '/?exam=%s'
           }
         ]
       },
